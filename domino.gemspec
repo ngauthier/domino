@@ -16,6 +16,7 @@ Gem::Specification.new do |s|
     'MIT-LICENSE',
     'README.md'
   ]
+  s.extra_rdoc_files = ['README.md']
   s.license = 'MIT'
   s.add_dependency('capybara', '>= 0.4.0')
   s.add_dependency('nokogiri', '>= 1.4.0')
