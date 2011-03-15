@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "domino"
-  s.version = "0.1.0"
+  s.version = "0.2.0"
   s.platform = Gem::Platform::RUBY
   s.author = "Nick Gauthier"
   s.email = "ngauthier@gmail.com"
@@ -19,7 +19,6 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files = ['README.md']
   s.license = 'MIT'
   s.add_dependency('capybara', '>= 0.4.0')
-  s.add_dependency('nokogiri', '>= 1.4.0')
   s.add_development_dependency('minitest')
 end
 

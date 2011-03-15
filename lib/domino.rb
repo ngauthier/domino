@@ -1,5 +1,4 @@
 require 'capybara/dsl'
-require 'nokogiri'
 # To create a basic Domino class, inherit from Domino and
 # define a selector and attributes:
 #
@@ -36,7 +35,7 @@ class Domino
   # Namespaced Domino::Error
   class Error < StandardError ; end
 
-  # Direct access to the nokogiri node, in case you need
+  # Direct access to the capybara node, in case you need
   # anything special
   attr_reader :node
 
@@ -96,17 +95,12 @@ class Domino
 
     private
 
-    # Return the html of the current page
-    def page_body
-      Capybara.current_session.body
-    end
-
-    # Return nokogiri nodes for this object
+    # Return capybara nodes for this object
     def nodes
       if @selector.nil?
         raise Domino::Error.new("You must define a selector")
       end
-      Nokogiri::HTML(page_body).css(@selector)
+      Capybara.current_session.all(@selector)
     end
 
     # Internal method for finding nodes by a selector 
@@ -124,11 +118,9 @@ class Domino
   #
   #   Dom::Post.all.first.attribute('.title')
   def attribute(selector)
-    if @node.css(selector).size > 0
-      @node.css(selector).first.text.strip
-    else
-      nil
-    end
+    @node.find(selector).text
+  rescue Capybara::ElementNotFound
+    nil
   end
 
   # Dom id for this object.
@@ -137,7 +129,7 @@ class Domino
   end
 
   private
-  # Takes a Nokogiri node and sets attributes
+  # Store the capybara node internally
   def initialize(node)
     @node = node
   end

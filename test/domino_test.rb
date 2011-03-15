@@ -7,10 +7,9 @@ gem 'capybara'
 gem 'nokogiri'
 require File.join(File.dirname(__FILE__), '..', 'lib', 'domino')
 
-class DominoTest < MiniTest::Unit::TestCase
-  class StubbedDomino < ::Domino
-    def self.page_body
-      %{
+class TestApplication
+  def call(env)
+    [200, {"Content-Type" => "text/plain"}, [%{
         <html>
           <body>
             <h1>Here are people and animals</h1>
@@ -41,33 +40,42 @@ class DominoTest < MiniTest::Unit::TestCase
             </div>
           </body>
         </html>
-      }
-    end
+    }]]
   end
+end
 
+Capybara.app = TestApplication.new
+
+
+class DominoTest < MiniTest::Unit::TestCase
+  include Capybara
   module Dom
-    class Person < StubbedDomino
+    class Person < Domino
       selector '#people .person'
       attribute :name
       attribute :biography, '.bio'
       attribute :favorite_color, '.fav-color'
     end
     
-    class Animal < StubbedDomino
+    class Animal < Domino
       selector '#animals .animal'
       attribute :name
     end
 
-    class Car < StubbedDomino
+    class Car < Domino
       selector '#cars .car'
     end
 
-    class NoSelector < StubbedDomino
+    class NoSelector < Domino
     end
 
-    class Receipt < StubbedDomino
+    class Receipt < Domino
       selector '#receipts .receipt'
     end
+  end
+
+  def setup
+    visit '/'
   end
   
   def test_enumerable
