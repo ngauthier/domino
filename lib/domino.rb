@@ -73,6 +73,14 @@ class Domino
     #       attribute :body, '.post-body' # use a custom selector
     #     end
     #   end
+    # In some cases, you may use this node's text as an attribute
+    #
+    #   module Dom
+    #     class Artist
+    #       attribute :name, "." # Use this node's text
+    #     end
+    #   end
+    #
     #
     # This will define an attr_reader on the Domino
     # and also a find_by_attribute method:
@@ -80,9 +88,31 @@ class Domino
     #   Dom::Post.all.first.title
     #   Dom::Post.find_by_title("First Post")
     #   Dom::Post.find_by_title(/^First/)
+    #   Dom::Artist.find_by_name(/Coldplay/)
     def attribute(attribute, selector = nil)
-      selector ||= %{.#{attribute.to_s}}
+      # using this node text as an attribute
+      if selector == "."
+        create_node_attribute(attribute)
+      else
+        selector ||= %{.#{attribute.to_s}}
 
+        create_attribute(attribute, selector)
+      end
+    end
+
+    private
+    def create_node_attribute(attribute)
+      class_eval %{
+        def #{attribute}
+          node_text
+        end
+        def self.find_by_#{attribute}(value)
+          find_by_node_text(value)
+        end
+      }
+    end
+
+    def create_attribute(attribute, selector)
       class_eval %{
         def #{attribute}
           attribute(%{#{selector}})
@@ -92,9 +122,6 @@ class Domino
         end
       }
     end
-
-    private
-
     # Return capybara nodes for this object
     def nodes
       if @selector.nil?
@@ -102,8 +129,12 @@ class Domino
       end
       Capybara.current_session.all(@selector)
     end
+    # Internal method for finding nodes by its text
+    def find_by_node_text(value)
+      detect{ |domino| domino.node.text  == value }
+    end
 
-    # Internal method for finding nodes by a selector 
+    # Internal method for finding nodes by a selector
     def find_by_attribute(selector, value)
       case value
       when Regexp
@@ -121,6 +152,10 @@ class Domino
     @node.find(selector).text
   rescue Capybara::ElementNotFound
     nil
+  end
+
+  def node_text
+    @node.text
   end
 
   # Dom id for this object.

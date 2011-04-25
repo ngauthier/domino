@@ -38,6 +38,10 @@ class TestApplication
             <div id='receipts'>
               <div class='receipt' id='receipt-72' data-store='ACME'></div>
             </div>
+            <ul id='houses'>
+                <li>Nice looking house</li>
+                <li>Not so nice house</li>
+            </ul>
           </body>
         </html>
     }]]
@@ -56,7 +60,7 @@ class DominoTest < MiniTest::Unit::TestCase
       attribute :biography, '.bio'
       attribute :favorite_color, '.fav-color'
     end
-    
+
     class Animal < Domino
       selector '#animals .animal'
       attribute :name
@@ -64,6 +68,11 @@ class DominoTest < MiniTest::Unit::TestCase
 
     class Car < Domino
       selector '#cars .car'
+    end
+
+    class House < Domino
+      selector '#houses li'
+      attribute :description , "."
     end
 
     class NoSelector < Domino
@@ -77,20 +86,20 @@ class DominoTest < MiniTest::Unit::TestCase
   def setup
     visit '/'
   end
-  
+
   def test_enumerable
     assert_equal 4, Dom::Person.count
     assert_equal 0, Dom::Animal.count
     assert_equal 0, Dom::Car.count
-
+    assert_equal 2, Dom::House.count
     assert_equal 4, Dom::Person.all.size
 
     red_people = Dom::Person.select{|p| p.favorite_color == 'Red'}
     assert_equal 2, red_people.count
 
     assert_equal(
-      %w(Donna Alice Bob Charlie),  
-      Dom::Person.sort{|a,b| 
+      %w(Donna Alice Bob Charlie),
+      Dom::Person.sort{|a,b|
         a.favorite_color.to_s <=> b.favorite_color.to_s
       }.map(&:name)
     )
@@ -108,6 +117,13 @@ class DominoTest < MiniTest::Unit::TestCase
 
   def test_id
     assert_equal '#receipt-72', Dom::Receipt.first.id
+  end
+
+  def test_attribute_inline
+    assert_equal "Nice looking house", Dom::House.first.description
+    assert_equal "Not so nice house" , Dom::House.all.last.description
+
+    assert_equal 'Nice looking house', Dom::House.find_by_description("Nice looking house").description
   end
 
   def test_find_by_attribute_string
