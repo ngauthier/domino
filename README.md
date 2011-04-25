@@ -15,6 +15,17 @@ define a selector and attributes:
       end
     end
 
+In some cases, you may want to use this node's text as an attribute
+
+
+    module Dom
+      class Artist < Domino
+        selector '#artists .artist'
+        attribute :title, "." # Use this node's text as a title
+      end
+    end
+
+
 Now in your integration test you can use some of Domino's methods:
 
     assert_equal 4, Dom::Post.count
@@ -53,7 +64,7 @@ in your test\_helper.rb (doesn't have to be inside a Rails test class).
 
 ## Example
 
-Check out [Domino Example](http://github.com/ngauthier/domino_example) for an 
+Check out [Domino Example](http://github.com/ngauthier/domino_example) for an
 example of using Test::Unit and Cucumber with Domino.
 
 ## Copyright
