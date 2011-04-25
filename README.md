@@ -34,6 +34,25 @@ What makes it really powerful is defining scoped actions:
     Dom::Post.find_by_title('First Post').delete
     assert_nil Dom::Post.find_by_title('First Post')
 
+## Integration with capybara
+
+Domino uses capybara internally to search html for nodes and
+attributes. If you need to do something special, you can have direct
+access to the capybara node.
+
+    module Dom
+      class Account < Domino
+        selector "#accounts li"
+        # Returns this node text
+        def text
+            node.text
+        end
+      end
+    end
+
+For more information about using Capybara nodes, check [Capybara Documentation](https://github.com/jnicklas/capybara/blob/master/README.rdoc).
+
+
 ## Integration with Cucumber
 
 Add a features/support/dominos.rb file, in which you define your dominos.
@@ -53,7 +72,7 @@ in your test\_helper.rb (doesn't have to be inside a Rails test class).
 
 ## Example
 
-Check out [Domino Example](http://github.com/ngauthier/domino_example) for an 
+Check out [Domino Example](http://github.com/ngauthier/domino_example) for an
 example of using Test::Unit and Cucumber with Domino.
 
 ## Copyright
