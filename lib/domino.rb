@@ -29,8 +29,8 @@ require 'capybara/dsl'
 #     Dom::Post.find_by_title('First Post').delete
 #     assert_nil Dom::Post.find_by_title('First Post')
 class Domino
-  include Capybara
-  extend  Capybara
+  include Capybara::DSL
+  extend  Capybara::DSL
 
   # Namespaced Domino::Error
   class Error < StandardError ; end

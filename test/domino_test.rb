@@ -48,7 +48,7 @@ Capybara.app = TestApplication.new
 
 
 class DominoTest < MiniTest::Unit::TestCase
-  include Capybara
+  include Capybara::DSL
   module Dom
     class Person < Domino
       selector '#people .person'

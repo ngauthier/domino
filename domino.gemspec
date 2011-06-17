@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = "domino"
-  s.version = "0.2.0"
+  s.version = "0.2.1"
   s.platform = Gem::Platform::RUBY
   s.author = "Nick Gauthier"
   s.email = "ngauthier@gmail.com"
