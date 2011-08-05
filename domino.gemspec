@@ -20,5 +20,6 @@ Gem::Specification.new do |s|
   s.license = 'MIT'
   s.add_dependency('capybara', '>= 0.4.0')
   s.add_development_dependency('minitest')
+  s.add_development_dependency('rake')
 end
 
