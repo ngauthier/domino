@@ -1,11 +1,8 @@
 require 'rubygems'
+require 'bundler/setup'
+Bundler.require
 require 'minitest/autorun'
 require 'minitest/mock'
-
-gem 'minitest'
-gem 'capybara'
-gem 'nokogiri'
-require File.join(File.dirname(__FILE__), '..', 'lib', 'domino')
 
 class TestApplication
   def call(env)
