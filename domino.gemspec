@@ -21,5 +21,6 @@ Gem::Specification.new do |s|
   s.add_dependency('capybara', '>= 0.4.0')
   s.add_development_dependency('minitest')
   s.add_development_dependency('rake')
+  s.add_development_dependency('simplecov')
 end
 
