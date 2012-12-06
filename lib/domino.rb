@@ -65,6 +65,10 @@ class Domino
       @selector = s
     end
 
+    def attributes
+      @attributes ||= []
+    end
+
     # Define an attribute for this Domino
     #
     #   module Dom
@@ -81,6 +85,8 @@ class Domino
     #   Dom::Post.find_by_title("First Post")
     #   Dom::Post.find_by_title(/^First/)
     def attribute(attribute, selector = nil)
+      attributes << attribute.to_sym
+
       selector ||= %{.#{attribute.to_s}}
 
       class_eval %{
@@ -103,7 +109,7 @@ class Domino
       Capybara.current_session.all(@selector)
     end
 
-    # Internal method for finding nodes by a selector 
+    # Internal method for finding nodes by a selector
     def find_by_attribute(selector, value)
       case value
       when Regexp
@@ -126,6 +132,13 @@ class Domino
   # Dom id for this object.
   def id
     @node['id'].nil? ? nil : %{##{@node['id']}}
+  end
+
+  def attributes
+    self.class.attributes.inject({}) do |memo, attribute|
+      memo[attribute] = send(attribute)
+      memo
+    end
   end
 
   private
