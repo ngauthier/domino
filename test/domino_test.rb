@@ -57,7 +57,7 @@ class DominoTest < MiniTest::Unit::TestCase
       attribute :biography, '.bio'
       attribute :favorite_color, '.fav-color'
     end
-    
+
     class Animal < Domino
       selector '#animals .animal'
       attribute :name
@@ -78,7 +78,7 @@ class DominoTest < MiniTest::Unit::TestCase
   def setup
     visit '/'
   end
-  
+
   def test_enumerable
     assert_equal 4, Dom::Person.count
     assert_equal 0, Dom::Animal.count
@@ -90,8 +90,8 @@ class DominoTest < MiniTest::Unit::TestCase
     assert_equal 2, red_people.count
 
     assert_equal(
-      %w(Donna Alice Bob Charlie),  
-      Dom::Person.sort{|a,b| 
+      %w(Donna Alice Bob Charlie),
+      Dom::Person.sort{|a,b|
         a.favorite_color.to_s <=> b.favorite_color.to_s
       }.map(&:name)
     )
@@ -121,5 +121,9 @@ class DominoTest < MiniTest::Unit::TestCase
 
   def test_node_properties
     assert_equal 'ACME', Dom::Receipt.first.node['data-store']
+  end
+
+  def test_attributes
+    assert_equal({:name => 'Alice', :biography => 'Alice is fun', :favorite_color => 'Blue'}, Dom::Person.first.attributes)
   end
 end
