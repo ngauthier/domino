@@ -111,12 +111,7 @@ class Domino
 
     # Internal method for finding nodes by a selector
     def find_by_attribute(selector, value)
-      case value
-      when Regexp
-        detect{|node| node.attribute(selector) =~ value }
-      else
-        detect{|node| node.attribute(selector) == value }
-      end
+      detect{|node| value === node.attribute(selector) }
     end
   end
 
