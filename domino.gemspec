@@ -1,26 +1,26 @@
-Gem::Specification.new do |s|
-  s.name = "domino"
-  s.version = "0.3.0"
-  s.platform = Gem::Platform::RUBY
-  s.author = "Nick Gauthier"
-  s.email = "ngauthier@gmail.com"
-  s.homepage = "http://www.github.com/ngauthier/domino"
-  s.summary = "View abstraction for integration testing"
-  s.description = %{
+# -*- encoding: utf-8 -*-
+Gem::Specification.new do |gem|
+  gem.name = "domino"
+  gem.version = "0.3.0"
+  gem.platform = Gem::Platform::RUBY
+  gem.authors = ["Nick Gauthier"]
+  gem.email = ["ngauthier@gmail.com"]
+  gem.homepage = "http://github.com/ngauthier/domino"
+  gem.summary = "View abstraction for integration testing"
+  gem.description = %{
     Make it easier to deal with UI elements by providing an
     interface that decouples your tests from your views.
   }
-  s.rubygems_version = '>= 1.3.6'
-  s.files = [
-    'lib/domino.rb',
-    'MIT-LICENSE',
-    'README.md'
-  ]
-  s.extra_rdoc_files = ['README.md']
-  s.license = 'MIT'
-  s.add_dependency('capybara', '>= 0.4.0')
-  s.add_development_dependency('minitest')
-  s.add_development_dependency('rake')
-  s.add_development_dependency('simplecov')
+  gem.rubygems_version = '>= 1.3.6'
+  gem.files = `git ls-files`.split($/)
+  gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
+  gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
+  gem.extra_rdoc_files = ['README.md']
+  gem.license = 'MIT'
+
+  gem.add_dependency('capybara', '>= 0.4.0')
+  gem.add_development_dependency('minitest')
+  gem.add_development_dependency('rake')
+  gem.add_development_dependency('simplecov')
 end
 

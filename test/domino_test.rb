@@ -1,4 +1,3 @@
-require 'rubygems'
 require 'bundler/setup'
 unless ENV['CI']
   require 'simplecov'
