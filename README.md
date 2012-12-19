@@ -1,4 +1,4 @@
-# Domino [![Build Status](http://travis-ci.org/ngauthier/domino.png)](http://travis-ci.org/ngauthier/domino)
+# Domino [![Build Status](https://travis-ci.org/ngauthier/domino.png?branch=master)](https://travis-ci.org/ngauthier/domino)
 
 View abstraction for integration testing
 
