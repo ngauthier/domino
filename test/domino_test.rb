@@ -123,6 +123,6 @@ class DominoTest < MiniTest::Unit::TestCase
   end
 
   def test_attributes
-    assert_equal({:name => 'Alice', :biography => 'Alice is fun', :favorite_color => 'Blue'}, Dom::Person.first.attributes)
+    assert_equal({name: 'Alice', biography: 'Alice is fun', favorite_color: 'Blue'}, Dom::Person.first.attributes)
   end
 end
