@@ -7,6 +7,11 @@ require 'capybara/dsl'
 #         selector '#posts .post'
 #         attribute :title # selector defaults to .title
 #         attribute :body, '.post-body' # example of selector override
+#
+#         # accepts blocks as callbacks these are run only if attribute exists
+#         attribute :comments do |text|
+#           text.to_i
+#         end
 #       end
 #     end
 #
@@ -69,6 +74,10 @@ class Domino
       @attributes ||= []
     end
 
+    def callbacks
+      @callbacks ||= {}
+    end
+
     # Define an attribute for this Domino
     #
     #   module Dom
@@ -84,14 +93,20 @@ class Domino
     #   Dom::Post.all.first.title
     #   Dom::Post.find_by_title("First Post")
     #   Dom::Post.find_by_title(/^First/)
-    def attribute(attribute, selector = nil)
-      attributes << attribute.to_sym
+    def attribute(attribute, selector = nil, &callback)
+      attributes << attribute
+      callbacks[attribute] = callback
 
       selector ||= %{.#{attribute.to_s}}
 
       class_eval %{
         def #{attribute}
-          attribute(%{#{selector}})
+          value = attribute(%{#{selector}})
+          if value && self.class.callbacks[:#{attribute}].is_a?(Proc)
+            self.class.callbacks[:#{attribute}].call(value)
+          else
+            value
+          end
         end
         def self.find_by_#{attribute}(value)
           find_by_attribute(%{#{selector}}, value)

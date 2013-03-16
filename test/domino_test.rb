@@ -18,11 +18,13 @@ class TestApplication
                 <h2 class='name'>Alice</h2>
                 <p class='bio'>Alice is fun</p>
                 <p class='fav-color'>Blue</p>
+                <p class='age'>23</p>
               </div>
               <div class='person'>
                 <h2 class='name'>Bob</h2>
                 <p class='bio'>Bob is smart</p>
                 <p class='fav-color'>Red</p>
+                <p class='age'>52</p>
               </div>
               <div class='person'>
                 <h2 class='name'>Charlie</h2>
@@ -55,6 +57,9 @@ class DominoTest < MiniTest::Unit::TestCase
       attribute :name
       attribute :biography, '.bio'
       attribute :favorite_color, '.fav-color'
+      attribute :age do |text|
+        text.to_i
+      end
     end
 
     class Animal < Domino
@@ -123,6 +128,10 @@ class DominoTest < MiniTest::Unit::TestCase
   end
 
   def test_attributes
-    assert_equal({name: 'Alice', biography: 'Alice is fun', favorite_color: 'Blue'}, Dom::Person.first.attributes)
+    assert_equal({name: 'Alice', biography: 'Alice is fun', favorite_color: 'Blue', age: 23}, Dom::Person.first.attributes)
+  end
+
+  def test_callback
+    assert_equal 23, Dom::Person.find_by_name("Alice").age
   end
 end

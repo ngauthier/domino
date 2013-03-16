@@ -12,6 +12,15 @@ define a selector and attributes:
         selector '#posts .post'
         attribute :title # selector defaults to .title
         attribute :body, '.post-body' # example of selector override
+
+        # pass a block if you want to modify the value
+        attribute :comments do |text|
+          text.to_i
+        end
+
+        attribute :posted_at do |text|
+          Date.parse(text)
+        end
       end
     end
 
