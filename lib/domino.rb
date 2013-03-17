@@ -118,7 +118,7 @@ class Domino
 
     # Return capybara nodes for this object
     def nodes
-      unless  @selector
+      unless @selector
         raise Domino::Error.new("You must define a selector")
       end
       Capybara.current_session.all(@selector)
