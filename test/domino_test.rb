@@ -16,23 +16,27 @@ class TestApplication
             <div id='people'>
               <div class='person'>
                 <h2 class='name'>Alice</h2>
+                <p class='last-name'>Cooper</p>
                 <p class='bio'>Alice is fun</p>
                 <p class='fav-color'>Blue</p>
                 <p class='age'>23</p>
               </div>
               <div class='person'>
                 <h2 class='name'>Bob</h2>
+                <p class='last-name'>Marley</p>
                 <p class='bio'>Bob is smart</p>
                 <p class='fav-color'>Red</p>
                 <p class='age'>52</p>
               </div>
               <div class='person'>
                 <h2 class='name'>Charlie</h2>
+                <p class='last-name'>Murphy</p>
                 <p class='bio'>Charlie is wild</p>
                 <p class='fav-color'>Red</p>
               </div>
               <div class='person'>
                 <h2 class='name'>Donna</h2>
+                <p class='last-name'>Summer</p>
                 <p class='bio'>Donna is quiet</p>
               </div>
             </div>
@@ -55,6 +59,7 @@ class DominoTest < MiniTest::Unit::TestCase
     class Person < Domino
       selector '#people .person'
       attribute :name
+      attribute :last_name
       attribute :biography, '.bio'
       attribute :favorite_color, '.fav-color'
       attribute :age do |text|
@@ -119,6 +124,10 @@ class DominoTest < MiniTest::Unit::TestCase
     assert_equal 'Alice', Dom::Person.find_by_biography('Alice is fun').name
   end
 
+  def test_default_selector
+    assert_equal 'Cooper', Dom::Person.find_by_name('Alice').last_name
+  end
+
   def test_find_by_attribute_regex
     assert_equal 'Charlie', Dom::Person.find_by_biography(/wild/).name
   end
@@ -128,7 +137,7 @@ class DominoTest < MiniTest::Unit::TestCase
   end
 
   def test_attributes
-    assert_equal({name: 'Alice', biography: 'Alice is fun', favorite_color: 'Blue', age: 23}, Dom::Person.first.attributes)
+    assert_equal({name: 'Alice', last_name: 'Cooper', biography: 'Alice is fun', favorite_color: 'Blue', age: 23}, Dom::Person.first.attributes)
   end
 
   def test_callback
