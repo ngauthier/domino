@@ -11,6 +11,7 @@ define a selector and attributes:
       class Post < Domino
         selector '#posts .post'
         attribute :title # selector defaults to .title
+        attribute :author_name # selector defaults to .author-name
         attribute :body, '.post-body' # example of selector override
 
         # pass a block if you want to modify the value
