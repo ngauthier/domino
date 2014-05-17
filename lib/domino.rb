@@ -59,6 +59,18 @@ class Domino
       map{|node| node}
     end
 
+    # Returns Domino for capybara node matching selector.
+    #
+    # Raises an error if no matching node is found. For drivers that
+    # support asynchronous behavior, this method waits for a matching
+    # node to appear.
+    def find!
+      if @selector.nil?
+        raise Domino::Error.new("You must define a selector")
+      end
+      new(Capybara.current_session.find(@selector))
+    end
+
     # Define the selector for this Domino
     #
     #   module Dom
