@@ -62,6 +62,24 @@ access to the capybara node.
 
 For more information about using Capybara nodes, check [Capybara Documentation](https://github.com/jnicklas/capybara/blob/master/README.rdoc).
 
+## Dealing with Asynchronous Behavior
+
+When working with Capybara drivers that support JavaScript, it may be
+necessary to wait for elements to appear. Note that the following code
+simply collects all `Account` dominos currently on the page and
+returns the first:
+
+    Dom::Account.first # returns nil if account is displayed asynchronously
+
+When you are waiting for a unique domino to appear, you can instead
+use the `find!` method:
+
+    Dom::Account.find! # waits for matching element to appear
+
+If no matching element appears, Capybara will raise an error telling
+you about the expected selector.  Depending on the
+[`Capybara.match` option](https://github.com/jnicklas/capybara#strategy),
+this will also raise an error if the selector matches multiple nodes.
 
 ## Integration with Cucumber
 

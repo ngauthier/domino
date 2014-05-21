@@ -143,4 +143,20 @@ class DominoTest < MiniTest::Unit::TestCase
   def test_callback
     assert_equal 23, Dom::Person.find_by_name("Alice").age
   end
+
+  def test_find_bang
+    assert_equal '#receipt-72', Dom::Receipt.find!.id
+  end
+
+  def test_find_bang_without_match
+    assert_raises Capybara::ElementNotFound do
+      Dom::Animal.find!
+    end
+  end
+
+  def test_find_bang_without_selector
+    assert_raises Domino::Error do
+      Dom::NoSelector.find!
+    end
+  end
 end
