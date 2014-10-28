@@ -7,42 +7,48 @@ View abstraction for integration testing
 To create a basic Domino class, inherit from Domino and
 define a selector and attributes:
 
-    module Dom
-      class Post < Domino
-        selector '#posts .post'
-        attribute :title # selector defaults to .title
-        attribute :author_name # selector defaults to .author-name
-        attribute :body, '.post-body' # example of selector override
+```ruby
+module Dom
+  class Post < Domino
+    selector '#posts .post'
+    attribute :title # selector defaults to .title
+    attribute :author_name # selector defaults to .author-name
+    attribute :body, '.post-body' # example of selector override
 
-        # pass a block if you want to modify the value
-        attribute :comments do |text|
-          text.to_i
-        end
-
-        attribute :posted_at do |text|
-          Date.parse(text)
-        end
-      end
+    # pass a block if you want to modify the value
+    attribute :comments do |text|
+      text.to_i
     end
+
+    attribute :posted_at do |text|
+      Date.parse(text)
+    end
+  end
+end
+```
 
 Now in your integration test you can use some of Domino's methods:
 
-    assert_equal 4, Dom::Post.count
-    refute_nil Dom::Post.find_by_title('First Post')
+```ruby
+assert_equal 4, Dom::Post.count
+refute_nil Dom::Post.find_by_title('First Post')
+```
 
 What makes it really powerful is defining scoped actions:
 
-    module Dom
-      class Post < Domino
-        def delete
-          within(id) { click_button 'Delete' }
-        end
-      end
+```ruby
+module Dom
+  class Post < Domino
+    def delete
+      within(id) { click_button 'Delete' }
     end
+  end
+end
 
-    refute_nil Dom::Post.find_by_title('First Post')
-    Dom::Post.find_by_title('First Post').delete
-    assert_nil Dom::Post.find_by_title('First Post')
+refute_nil Dom::Post.find_by_title('First Post')
+Dom::Post.find_by_title('First Post').delete
+assert_nil Dom::Post.find_by_title('First Post')
+```
 
 ## Integration with capybara
 
@@ -50,15 +56,17 @@ Domino uses capybara internally to search html for nodes and
 attributes. If you need to do something special, you can have direct
 access to the capybara node.
 
-    module Dom
-      class Account < Domino
-        selector "#accounts li"
-        # Returns this node text
-        def text
-            node.text
-        end
-      end
+```ruby
+module Dom
+  class Account < Domino
+    selector "#accounts li"
+    # Returns this node text
+    def text
+        node.text
     end
+  end
+end
+```
 
 For more information about using Capybara nodes, check [Capybara Documentation](https://github.com/jnicklas/capybara/blob/master/README.rdoc).
 
@@ -69,12 +77,16 @@ necessary to wait for elements to appear. Note that the following code
 simply collects all `Account` dominos currently on the page and
 returns the first:
 
-    Dom::Account.first # returns nil if account is displayed asynchronously
+```ruby
+Dom::Account.first # returns nil if account is displayed asynchronously
+```
 
 When you are waiting for a unique domino to appear, you can instead
 use the `find!` method:
 
-    Dom::Account.find! # waits for matching element to appear
+```ruby
+Dom::Account.find! # waits for matching element to appear
+```
 
 If no matching element appears, Capybara will raise an error telling
 you about the expected selector.  Depending on the
@@ -91,7 +103,9 @@ Use them in your steps.
 
 Include "domino" in your Gemfile if using bundler, or simply
 
-    require 'domino'
+```ruby
+require 'domino'
+```
 
 If you're not using Bundler.
 
