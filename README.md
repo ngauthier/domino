@@ -35,6 +35,9 @@ refute_nil Dom::Post.find_by_title('First Post')
 
 # Multiple attributes
 refute_nil Dom::Post.find_by(title: 'First Post', author: 'Jane Doe')
+
+# Multiple attributes with exception if no match is found
+refute_nil Dom::Post.find_by!(title: 'First Post', author: 'Jane Doe')
 ```
 
 What makes it really powerful is defining scoped actions:

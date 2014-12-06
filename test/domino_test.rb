@@ -173,4 +173,24 @@ class DominoTest < MiniTest::Unit::TestCase
       Dom::NoSelector.find_by(foo: "bar")
     end
   end
+
+  def test_find_by_bang
+    assert_equal 'Alice', Dom::Person.find_by!(biography: 'Alice is fun').name
+  end
+
+  def test_find_by_bang_with_multiple_attributes
+    assert_equal 'Alice', Dom::Person.find_by!(biography: 'Alice is fun', age: 23, favorite_color: 'Blue').name
+  end
+
+  def test_find_by_bang_without_selector
+    assert_raises Domino::Error do
+      Dom::NoSelector.find_by(foo: "bar")
+    end
+  end
+
+  def test_find_by_bang_without_match
+    assert_raises Capybara::ElementNotFound do
+      Dom::Person.find_by!(foo: "bar")
+    end
+  end
 end

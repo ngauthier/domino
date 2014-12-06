@@ -79,6 +79,16 @@ class Domino
       find_by_attributes(attributes)
     end
 
+    # Returns Domino for capybara node matching all attributes.
+    #
+    # Raises an error if no matching node is found.
+    def find_by!(attributes)
+      if @selector.nil?
+        raise Domino::Error.new("You must define a selector")
+      end
+      find_by_attributes!(attributes)
+    end
+
     # Define the selector for this Domino
     #
     #   module Dom
@@ -154,6 +164,14 @@ class Domino
         # Is attributes a subset of node.attributes
         node.attributes.merge(attributes) == node.attributes
       end
+    end
+
+    def find_by_attributes!(attributes)
+      node = find_by_attributes(attributes)
+      unless node
+        raise Capybara::ElementNotFound
+      end
+      node
     end
   end
 
