@@ -193,4 +193,22 @@ class DominoTest < MiniTest::Unit::TestCase
       Dom::Person.find_by!(foo: "bar")
     end
   end
+
+  def test_where_with_single_attribute
+    assert_equal %w(Bob Charlie), Dom::Person.where(favorite_color: "Red").map(&:name)
+  end
+
+  def test_where_with_multiple_attributes
+    assert_equal %w(Alice), Dom::Person.where(age: 23, favorite_color: 'Blue').map(&:name)
+  end
+
+  def test_where_without_match
+    assert_equal [], Dom::Person.where(favorite_color: "Yellow")
+  end
+
+  def test_where_without_selector
+    assert_raises Domino::Error do
+      Dom::NoSelector.where(foo: "bar")
+    end
+  end
 end

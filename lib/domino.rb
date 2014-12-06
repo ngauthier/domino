@@ -86,6 +86,15 @@ class Domino
       require_selector! { find_by_attributes!(attributes) }
     end
 
+    # Returns collection of Dominos for capybara node matching all attributes.
+    def where(attributes)
+      require_selector! do
+        select do |node|
+          node.attributes.merge(attributes) == node.attributes
+        end
+      end
+    end
+
     # Define the selector for this Domino
     #
     #   module Dom
