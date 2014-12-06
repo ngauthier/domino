@@ -32,6 +32,15 @@ Now in your integration test you can use some of Domino's methods:
 ```ruby
 assert_equal 4, Dom::Post.count
 refute_nil Dom::Post.find_by_title('First Post')
+
+# Multiple attributes, returns first match if any
+refute_nil Dom::Post.find_by(title: 'First Post', author: 'Jane Doe')
+
+# Multiple attributes with exception if no match is found
+refute_nil Dom::Post.find_by!(title: 'First Post', author: 'Jane Doe')
+
+# Multiple attributes, returns all matches if any
+assert_equal ["12/06/2014", "12/01/2014"], Dom::Post.where(author: 'Jane Doe').map(&:posted_on)
 ```
 
 What makes it really powerful is defining scoped actions:
