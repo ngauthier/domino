@@ -49,14 +49,18 @@ class Domino
 
     # Iterate over all the Dominos
     def each
-      nodes.each do |node|
-        yield new(node)
+      require_selector! do
+        nodes.each do |node|
+          yield new(node)
+        end
       end
     end
 
     # Get an array of all the Dominos
     def all
-      map{|node| node}
+      require_selector! do
+        map{|node| node}
+      end
     end
 
     # Returns Domino for capybara node matching selector.
@@ -65,28 +69,21 @@ class Domino
     # support asynchronous behavior, this method waits for a matching
     # node to appear.
     def find!
-      if @selector.nil?
-        raise Domino::Error.new("You must define a selector")
+      require_selector! do
+        new(Capybara.current_session.find(@selector))
       end
-      new(Capybara.current_session.find(@selector))
     end
 
     # Returns Domino for capybara node matching all attributes.
     def find_by(attributes)
-      if @selector.nil?
-        raise Domino::Error.new("You must define a selector")
-      end
-      find_by_attributes(attributes)
+      require_selector! { find_by_attributes(attributes) }
     end
 
     # Returns Domino for capybara node matching all attributes.
     #
     # Raises an error if no matching node is found.
     def find_by!(attributes)
-      if @selector.nil?
-        raise Domino::Error.new("You must define a selector")
-      end
-      find_by_attributes!(attributes)
+      require_selector! { find_by_attributes!(attributes) }
     end
 
     # Define the selector for this Domino
@@ -148,9 +145,6 @@ class Domino
 
     # Return capybara nodes for this object
     def nodes
-      if @selector.nil?
-        raise Domino::Error.new("You must define a selector")
-      end
       Capybara.current_session.all(@selector)
     end
 
@@ -167,11 +161,16 @@ class Domino
     end
 
     def find_by_attributes!(attributes)
-      node = find_by_attributes(attributes)
-      unless node
-        raise Capybara::ElementNotFound
+      find_by_attributes(attributes).tap do |node|
+        raise Capybara::ElementNotFound if node.nil?
       end
-      node
+    end
+
+    def require_selector!(&block)
+      if @selector.nil?
+        raise Domino::Error.new("You must define a selector")
+      end
+      yield
     end
   end
 
