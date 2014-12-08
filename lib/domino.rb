@@ -1,4 +1,5 @@
 require 'capybara/dsl'
+require 'set'
 # To create a basic Domino class, inherit from Domino and
 # define a selector and attributes:
 #
@@ -65,10 +66,27 @@ class Domino
     # support asynchronous behavior, this method waits for a matching
     # node to appear.
     def find!
-      if @selector.nil?
-        raise Domino::Error.new("You must define a selector")
-      end
+      require_selector!
       new(Capybara.current_session.find(@selector))
+    end
+
+    # Returns Domino for capybara node matching all attributes.
+    def find_by(attributes)
+      where(attributes).first
+    end
+
+    # Returns Domino for capybara node matching all attributes.
+    #
+    # Raises an error if no matching node is found.
+    def find_by!(attributes)
+      find_by(attributes) or raise Capybara::ElementNotFound
+    end
+
+    # Returns collection of Dominos for capybara node matching all attributes.
+    def where(attributes)
+      select do |node|
+        attributes.to_set.subset?(node.attributes.to_set)
+      end
     end
 
     # Define the selector for this Domino
@@ -130,15 +148,17 @@ class Domino
 
     # Return capybara nodes for this object
     def nodes
-      if @selector.nil?
-        raise Domino::Error.new("You must define a selector")
-      end
+      require_selector!
       Capybara.current_session.all(@selector)
     end
 
     # Internal method for finding nodes by a selector
     def find_by_attribute(selector, value)
       detect{|node| value === node.attribute(selector) }
+    end
+
+    def require_selector!(&block)
+      raise Domino::Error.new("You must define a selector") if @selector.nil?
     end
   end
 
