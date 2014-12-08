@@ -1,4 +1,5 @@
 require 'capybara/dsl'
+require 'set'
 # To create a basic Domino class, inherit from Domino and
 # define a selector and attributes:
 #
@@ -49,18 +50,14 @@ class Domino
 
     # Iterate over all the Dominos
     def each
-      require_selector! do
-        nodes.each do |node|
-          yield new(node)
-        end
+      nodes.each do |node|
+        yield new(node)
       end
     end
 
     # Get an array of all the Dominos
     def all
-      require_selector! do
-        map{|node| node}
-      end
+      map{|node| node}
     end
 
     # Returns Domino for capybara node matching selector.
@@ -69,29 +66,26 @@ class Domino
     # support asynchronous behavior, this method waits for a matching
     # node to appear.
     def find!
-      require_selector! do
-        new(Capybara.current_session.find(@selector))
-      end
+      require_selector!
+      new(Capybara.current_session.find(@selector))
     end
 
     # Returns Domino for capybara node matching all attributes.
     def find_by(attributes)
-      require_selector! { find_by_attributes(attributes) }
+      where(attributes).first
     end
 
     # Returns Domino for capybara node matching all attributes.
     #
     # Raises an error if no matching node is found.
     def find_by!(attributes)
-      require_selector! { find_by_attributes!(attributes) }
+      find_by(attributes) or raise Capybara::ElementNotFound
     end
 
     # Returns collection of Dominos for capybara node matching all attributes.
     def where(attributes)
-      require_selector! do
-        select do |node|
-          node.attributes.merge(attributes) == node.attributes
-        end
+      select do |node|
+        attributes.to_set.subset?(node.attributes.to_set)
       end
     end
 
@@ -154,6 +148,7 @@ class Domino
 
     # Return capybara nodes for this object
     def nodes
+      require_selector!
       Capybara.current_session.all(@selector)
     end
 
@@ -162,24 +157,8 @@ class Domino
       detect{|node| value === node.attribute(selector) }
     end
 
-    def find_by_attributes(attributes)
-      detect do |node|
-        # Is attributes a subset of node.attributes
-        node.attributes.merge(attributes) == node.attributes
-      end
-    end
-
-    def find_by_attributes!(attributes)
-      find_by_attributes(attributes).tap do |node|
-        raise Capybara::ElementNotFound if node.nil?
-      end
-    end
-
     def require_selector!(&block)
-      if @selector.nil?
-        raise Domino::Error.new("You must define a selector")
-      end
-      yield
+      raise Domino::Error.new("You must define a selector") if @selector.nil?
     end
   end
 
