@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 Gem::Specification.new do |gem|
   gem.name = "domino"
-  gem.version = "0.7.0"
+  gem.version = "0.7.1"
   gem.platform = Gem::Platform::RUBY
   gem.authors = ["Nick Gauthier"]
   gem.email = ["ngauthier@gmail.com"]
