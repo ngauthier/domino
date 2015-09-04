@@ -85,7 +85,9 @@ class Domino
     # Returns collection of Dominos for capybara node matching all attributes.
     def where(attributes)
       select do |node|
-        attributes.to_set.subset?(node.attributes.to_set)
+        attributes.all? do |key, value|
+          node.send(key) == value if node.respond_to?(key)
+        end
       end
     end
 
