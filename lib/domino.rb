@@ -156,7 +156,13 @@ class Domino
 
     # Internal method for finding nodes by a selector
     def find_by_attribute(selector, value)
-      detect { |node| value === node.attribute(selector) }
+      detect do |node|
+        if m = selector.match(/\A&(\S+)\z/)
+          node.matches_css?(m[1])
+        else
+          value === node.attribute(selector)
+        end
+      end
     end
 
     def require_selector!
@@ -168,14 +174,19 @@ class Domino
   #
   #   Dom::Post.all.first.attribute('.title')
   def attribute(selector)
-    @node.find(selector).text
+    if m = selector.match(/^&(\S+)$/)
+      attr = m[0].match(/(?<=\[).+?(?=\])/)[0]
+      node[attr] || node.matches_css(selector)
+    else
+      node.find(selector).text
+    end
   rescue Capybara::ElementNotFound
     nil
   end
 
   # Dom id for this object.
   def id
-    @node['id'].nil? ? nil : %(##{@node['id']})
+    node['id'].nil? ? nil : %(##{node['id']})
   end
 
   def attributes
