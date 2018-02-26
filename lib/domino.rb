@@ -39,7 +39,7 @@ class Domino
   extend  Capybara::DSL
 
   # Namespaced Domino::Error
-  class Error < StandardError ; end
+  class Error < StandardError; end
 
   # Direct access to the capybara node, in case you need
   # anything special
@@ -57,7 +57,7 @@ class Domino
 
     # Get an array of all the Dominos
     def all
-      map{|node| node}
+      map { |node| node }
     end
 
     # Returns Domino for capybara node matching selector.
@@ -79,7 +79,7 @@ class Domino
     #
     # Raises an error if no matching node is found.
     def find_by!(attributes)
-      find_by(attributes) or raise Capybara::ElementNotFound
+      find_by(attributes) || raise(Capybara::ElementNotFound)
     end
 
     # Returns collection of Dominos for capybara node matching all attributes.
@@ -129,7 +129,7 @@ class Domino
       attributes << attribute
       callbacks[attribute] = callback
 
-      selector ||= %{.#{attribute.to_s.gsub("_", "-")}}
+      selector ||= %(.#{attribute.to_s.tr('_', '-')})
 
       class_eval %{
         def #{attribute}
@@ -156,11 +156,11 @@ class Domino
 
     # Internal method for finding nodes by a selector
     def find_by_attribute(selector, value)
-      detect{|node| value === node.attribute(selector) }
+      detect { |node| value === node.attribute(selector) }
     end
 
-    def require_selector!(&block)
-      raise Domino::Error.new("You must define a selector") if @selector.nil?
+    def require_selector!
+      raise Domino::Error, 'You must define a selector' if @selector.nil?
     end
   end
 
@@ -175,17 +175,17 @@ class Domino
 
   # Dom id for this object.
   def id
-    @node['id'].nil? ? nil : %{##{@node['id']}}
+    @node['id'].nil? ? nil : %(##{@node['id']})
   end
 
   def attributes
-    self.class.attributes.inject({}) do |memo, attribute|
+    self.class.attributes.each_with_object({}) do |attribute, memo|
       memo[attribute] = send(attribute)
-      memo
     end
   end
 
   private
+
   # Store the capybara node internally
   def initialize(node)
     @node = node
