@@ -8,8 +8,8 @@ require 'minitest/autorun'
 require 'minitest/mock'
 
 class TestApplication
-  def call(env)
-    [200, {"Content-Type" => "text/plain"}, [%{
+  def call(_env)
+    [200, { 'Content-Type' => 'text/plain' }, [%(
         <html>
           <body>
             <h1>Here are people and animals</h1>
@@ -46,12 +46,11 @@ class TestApplication
             </div>
           </body>
         </html>
-    }]]
+    )]]
   end
 end
 
 Capybara.app = TestApplication.new
-
 
 class DominoTest < MiniTest::Unit::TestCase
   include Capybara::DSL
@@ -62,9 +61,7 @@ class DominoTest < MiniTest::Unit::TestCase
       attribute :last_name
       attribute :biography, '.bio'
       attribute :favorite_color, '.fav-color'
-      attribute :age do |text|
-        text.to_i
-      end
+      attribute :age, &:to_i
     end
 
     class Animal < Domino
@@ -95,14 +92,14 @@ class DominoTest < MiniTest::Unit::TestCase
 
     assert_equal 4, Dom::Person.all.size
 
-    red_people = Dom::Person.select{|p| p.favorite_color == 'Red'}
+    red_people = Dom::Person.select { |p| p.favorite_color == 'Red' }
     assert_equal 2, red_people.count
 
     assert_equal(
-      %w(Donna Alice Bob Charlie),
-      Dom::Person.sort{|a,b|
+      %w[Donna Alice Bob Charlie],
+      Dom::Person.sort do |a, b|
         a.favorite_color.to_s <=> b.favorite_color.to_s
-      }.map(&:name)
+      end.map(&:name)
     )
   end
 
@@ -137,11 +134,11 @@ class DominoTest < MiniTest::Unit::TestCase
   end
 
   def test_attributes
-    assert_equal({name: 'Alice', last_name: 'Cooper', biography: 'Alice is fun', favorite_color: 'Blue', age: 23}, Dom::Person.first.attributes)
+    assert_equal({ name: 'Alice', last_name: 'Cooper', biography: 'Alice is fun', favorite_color: 'Blue', age: 23 }, Dom::Person.first.attributes)
   end
 
   def test_callback
-    assert_equal 23, Dom::Person.find_by_name("Alice").age
+    assert_equal 23, Dom::Person.find_by_name('Alice').age
   end
 
   def test_find_bang
@@ -170,7 +167,7 @@ class DominoTest < MiniTest::Unit::TestCase
 
   def test_find_by_without_selector
     assert_raises Domino::Error do
-      Dom::NoSelector.find_by(foo: "bar")
+      Dom::NoSelector.find_by(foo: 'bar')
     end
   end
 
@@ -184,31 +181,31 @@ class DominoTest < MiniTest::Unit::TestCase
 
   def test_find_by_bang_without_selector
     assert_raises Domino::Error do
-      Dom::NoSelector.find_by(foo: "bar")
+      Dom::NoSelector.find_by(foo: 'bar')
     end
   end
 
   def test_find_by_bang_without_match
     assert_raises Capybara::ElementNotFound do
-      Dom::Person.find_by!(foo: "bar")
+      Dom::Person.find_by!(foo: 'bar')
     end
   end
 
   def test_where_with_single_attribute
-    assert_equal %w(Bob Charlie), Dom::Person.where(favorite_color: "Red").map(&:name)
+    assert_equal %w[Bob Charlie], Dom::Person.where(favorite_color: 'Red').map(&:name)
   end
 
   def test_where_with_multiple_attributes
-    assert_equal %w(Alice), Dom::Person.where(age: 23, favorite_color: 'Blue').map(&:name)
+    assert_equal %w[Alice], Dom::Person.where(age: 23, favorite_color: 'Blue').map(&:name)
   end
 
   def test_where_without_match
-    assert_equal [], Dom::Person.where(favorite_color: "Yellow")
+    assert_equal [], Dom::Person.where(favorite_color: 'Yellow')
   end
 
   def test_where_without_selector
     assert_raises Domino::Error do
-      Dom::NoSelector.where(foo: "bar")
+      Dom::NoSelector.where(foo: 'bar')
     end
   end
 end
