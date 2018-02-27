@@ -14,7 +14,7 @@ class TestApplication
           <body>
             <h1>Here are people and animals</h1>
             <div id='people'>
-              <div class='person' data-rank="1">
+              <div class='person active' data-rank="1">
                 <h2 class='name'>Alice</h2>
                 <p class='last-name'>Cooper</p>
                 <p class='bio'>Alice is fun</p>
@@ -64,6 +64,7 @@ class DominoTest < MiniTest::Unit::TestCase
       attribute :favorite_color, '.fav-color'
       attribute :age, &:to_i
       attribute :rank, '&[data-rank]', &:to_i
+      attribute :active, '&.active'
     end
 
     class Animal < Domino
@@ -136,7 +137,7 @@ class DominoTest < MiniTest::Unit::TestCase
   end
 
   def test_attributes
-    assert_equal({ name: 'Alice', last_name: 'Cooper', biography: 'Alice is fun', favorite_color: 'Blue', age: 23, rank: 1 }, Dom::Person.first.attributes)
+    assert_equal({ name: 'Alice', last_name: 'Cooper', biography: 'Alice is fun', favorite_color: 'Blue', age: 23, rank: 1, active: true }, Dom::Person.first.attributes)
   end
 
   def test_callback
