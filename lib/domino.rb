@@ -215,11 +215,7 @@ class Domino
     end
 
     def match_value?(node, value)
-      if combinator?
-        node.matches_css?(combinator)
-      else
-        value === value(node)
-      end
+      value === value(node)
     end
 
     # Get the text of the first dom element matching a selector
