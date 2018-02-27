@@ -15,13 +15,28 @@ module Dom
     attribute :author_name # selector defaults to .author-name
     attribute :body, '.post-body' # example of selector override
 
-    # pass a block if you want to modify the value
+    # pass a block if you want to convert the value
     attribute :comments do |text|
       text.to_i
     end
 
     attribute :posted_at do |text|
       Date.parse(text)
+    end
+
+    # Combination selector is a boolean that combines with the root node. Boolean.
+    # You can find a post that also has the .active class.
+    attribute :active, "&.active"
+
+
+    # Combination selector for a data attribute. Finds the value of the data attribute
+    # on the root node. You can convert it with a callback like any other attribute.
+    attribute :rating, "&[data-rating]", &:to_i
+
+    # Combination selector for a data attribute with no value set. Must convert to
+    # boolean in the callback.
+    attribute :blah, "&[data-blah]" do |a|
+      !a.nil?
     end
   end
 end
@@ -71,7 +86,7 @@ module Dom
     selector "#accounts li"
     # Returns this node text
     def text
-        node.text
+      node.text
     end
   end
 end

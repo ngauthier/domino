@@ -9,6 +9,12 @@ require 'set'
 #         attribute :title # selector defaults to .title
 #         attribute :body, '.post-body' # example of selector override
 #
+#         # can define attributes on the selected node
+#         attribute :uuid, "&[data-uuid]"
+#
+#         # can define states based on classes of the selected node
+#         attribute :active, "&.active"
+#
 #         # accepts blocks as callbacks these are run only if attribute exists
 #         attribute :comments do |text|
 #           text.to_i
@@ -39,7 +45,7 @@ class Domino
   extend  Capybara::DSL
 
   # Namespaced Domino::Error
-  class Error < StandardError ; end
+  class Error < StandardError; end
 
   # Direct access to the capybara node, in case you need
   # anything special
@@ -57,7 +63,7 @@ class Domino
 
     # Get an array of all the Dominos
     def all
-      map{|node| node}
+      map { |domino| domino }
     end
 
     # Returns Domino for capybara node matching selector.
@@ -79,14 +85,14 @@ class Domino
     #
     # Raises an error if no matching node is found.
     def find_by!(attributes)
-      find_by(attributes) or raise Capybara::ElementNotFound
+      find_by(attributes) || raise(Capybara::ElementNotFound)
     end
 
     # Returns collection of Dominos for capybara node matching all attributes.
     def where(attributes)
-      select do |node|
+      select do |domino|
         attributes.all? do |key, value|
-          node.send(key) == value if node.respond_to?(key)
+          domino.send(key) == value if domino.respond_to?(key)
         end
       end
     end
@@ -103,11 +109,11 @@ class Domino
     end
 
     def attributes
-      @attributes ||= []
+      attribute_definitions.keys
     end
 
-    def callbacks
-      @callbacks ||= {}
+    def attribute_definitions
+      @attribute_definitions ||= {}
     end
 
     # Define an attribute for this Domino
@@ -126,22 +132,16 @@ class Domino
     #   Dom::Post.find_by_title("First Post")
     #   Dom::Post.find_by_title(/^First/)
     def attribute(attribute, selector = nil, &callback)
-      attributes << attribute
-      callbacks[attribute] = callback
+      selector ||= %(.#{attribute.to_s.tr('_', '-')})
 
-      selector ||= %{.#{attribute.to_s.gsub("_", "-")}}
+      attribute_definitions[attribute] = Attribute.new(attribute, selector, &callback)
 
       class_eval %{
         def #{attribute}
-          value = attribute(%{#{selector}})
-          if value && self.class.callbacks[:#{attribute}].is_a?(Proc)
-            self.class.callbacks[:#{attribute}].call(value)
-          else
-            value
-          end
+          self.class.attribute_definitions[:#{attribute}].value(node)
         end
         def self.find_by_#{attribute}(value)
-          find_by_attribute(%{#{selector}}, value)
+          find_by_attribute(:#{attribute}, value)
         end
       }
     end
@@ -155,39 +155,94 @@ class Domino
     end
 
     # Internal method for finding nodes by a selector
-    def find_by_attribute(selector, value)
-      detect{|node| value === node.attribute(selector) }
+    def find_by_attribute(attribute, value)
+      detect do |domino|
+        attribute_definitions[attribute].match_value?(domino.node, value)
+      end
     end
 
-    def require_selector!(&block)
-      raise Domino::Error.new("You must define a selector") if @selector.nil?
+    def require_selector!
+      raise Domino::Error, 'You must define a selector' if @selector.nil?
     end
   end
 
-  # Get the text of the first dom element matching a selector
+  # Get the text of the first dom element matching a selector:
   #
   #   Dom::Post.all.first.attribute('.title')
-  def attribute(selector)
-    @node.find(selector).text
-  rescue Capybara::ElementNotFound
-    nil
+  #
+  # Or get the value of the attribute of this dom element:
+  #
+  #   Dom::Post.all.first.attribute('&[href]')
+  def attribute(selector, &callback)
+    Attribute.new(nil, selector, &callback).value(node)
   end
 
   # Dom id for this object.
   def id
-    @node['id'].nil? ? nil : %{##{@node['id']}}
+    node['id'].nil? ? nil : %(##{node['id']})
   end
 
   def attributes
-    self.class.attributes.inject({}) do |memo, attribute|
+    self.class.attributes.each_with_object({}) do |attribute, memo|
       memo[attribute] = send(attribute)
-      memo
     end
   end
 
   private
+
   # Store the capybara node internally
   def initialize(node)
     @node = node
+  end
+
+  class Attribute
+    attr_reader :name, :selector, :callback
+
+    def initialize(name, selector = nil, &callback)
+      @callback = callback
+      @name = name
+      @selector = selector || %(.#{name.to_s.tr('_', '-')})
+    end
+
+    def value(node)
+      val = value_before_typecast(node)
+
+      if val && callback.is_a?(Proc)
+        callback.call(val)
+      else
+        val
+      end
+    end
+
+    # Get the text of the first dom element matching a selector
+    #
+    #   Dom::Post.all.first.attribute('.title')
+    def value_before_typecast(node)
+      if combinator?
+        node[node_attribute_key] || node.matches_css?(combinator)
+      else
+        node.find(selector).text
+      end
+    rescue Capybara::ElementNotFound
+      nil
+    end
+
+    def match_value?(node, value)
+      value === value(node)
+    end
+
+    private
+
+    def combinator?
+      selector[0] == "&".freeze
+    end
+
+    def combinator
+      @combinator ||= selector.sub(/&/, "") if combinator?
+    end
+
+    def node_attribute_key
+      @node_attribute_key ||= combinator.match(/(?<=\[).+?(?=\])/) { |m| m[0] }
+    end
   end
 end

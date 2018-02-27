@@ -8,33 +8,33 @@ require 'minitest/autorun'
 require 'minitest/mock'
 
 class TestApplication
-  def call(env)
-    [200, {"Content-Type" => "text/plain"}, [%{
+  def call(_env)
+    [200, { 'Content-Type' => 'text/plain' }, [%(
         <html>
           <body>
             <h1>Here are people and animals</h1>
             <div id='people'>
-              <div class='person'>
+              <div class='person active' data-rank="1" data-uuid="e94bb2d3-71d2-4efb-abd4-ebc0cb58d19f">
                 <h2 class='name'>Alice</h2>
                 <p class='last-name'>Cooper</p>
                 <p class='bio'>Alice is fun</p>
                 <p class='fav-color'>Blue</p>
                 <p class='age'>23</p>
               </div>
-              <div class='person'>
+              <div class='person' data-rank="3" data-uuid="05bf319e-8d6a-43c2-be37-2dad8ddbe5af">
                 <h2 class='name'>Bob</h2>
                 <p class='last-name'>Marley</p>
                 <p class='bio'>Bob is smart</p>
                 <p class='fav-color'>Red</p>
                 <p class='age'>52</p>
               </div>
-              <div class='person'>
+              <div class='person' data-rank="2" data-uuid="4abcdeff-1d36-44a9-a05e-8fc57564d2c4">
                 <h2 class='name'>Charlie</h2>
                 <p class='last-name'>Murphy</p>
                 <p class='bio'>Charlie is wild</p>
                 <p class='fav-color'>Red</p>
               </div>
-              <div class='person'>
+              <div class='person' data-rank="7" data-blocked data-uuid="2afccde0-5d13-41c7-ab01-7f37fb2fe3ee">
                 <h2 class='name'>Donna</h2>
                 <p class='last-name'>Summer</p>
                 <p class='bio'>Donna is quiet</p>
@@ -46,25 +46,27 @@ class TestApplication
             </div>
           </body>
         </html>
-    }]]
+    )]]
   end
 end
 
 Capybara.app = TestApplication.new
-
 
 class DominoTest < MiniTest::Unit::TestCase
   include Capybara::DSL
   module Dom
     class Person < Domino
       selector '#people .person'
+
       attribute :name
       attribute :last_name
       attribute :biography, '.bio'
       attribute :favorite_color, '.fav-color'
-      attribute :age do |text|
-        text.to_i
-      end
+      attribute :age, &:to_i
+      attribute :rank, '&[data-rank]', &:to_i
+      attribute :active, '&.active'
+      attribute :uuid, '&[data-uuid]'
+      attribute(:blocked, '&[data-blocked]') { |a| !a.nil? }
     end
 
     class Animal < Domino
@@ -95,14 +97,14 @@ class DominoTest < MiniTest::Unit::TestCase
 
     assert_equal 4, Dom::Person.all.size
 
-    red_people = Dom::Person.select{|p| p.favorite_color == 'Red'}
+    red_people = Dom::Person.select { |p| p.favorite_color == 'Red' }
     assert_equal 2, red_people.count
 
     assert_equal(
-      %w(Donna Alice Bob Charlie),
-      Dom::Person.sort{|a,b|
+      %w[Donna Alice Bob Charlie],
+      Dom::Person.sort do |a, b|
         a.favorite_color.to_s <=> b.favorite_color.to_s
-      }.map(&:name)
+      end.map(&:name)
     )
   end
 
@@ -132,16 +134,20 @@ class DominoTest < MiniTest::Unit::TestCase
     assert_equal 'Charlie', Dom::Person.find_by_biography(/wild/).name
   end
 
+  def test_find_by_data_combinator_attribute_regex
+    assert_equal 'Charlie', Dom::Person.find_by_uuid(/abcdef/).name
+  end
+
   def test_node_properties
     assert_equal 'ACME', Dom::Receipt.first.node['data-store']
   end
 
   def test_attributes
-    assert_equal({name: 'Alice', last_name: 'Cooper', biography: 'Alice is fun', favorite_color: 'Blue', age: 23}, Dom::Person.first.attributes)
+    assert_equal({ name: 'Alice', last_name: 'Cooper', biography: 'Alice is fun', favorite_color: 'Blue', age: 23, rank: 1, active: true, uuid: 'e94bb2d3-71d2-4efb-abd4-ebc0cb58d19f', blocked: false }, Dom::Person.first.attributes)
   end
 
   def test_callback
-    assert_equal 23, Dom::Person.find_by_name("Alice").age
+    assert_equal 23, Dom::Person.find_by_name('Alice').age
   end
 
   def test_find_bang
@@ -165,13 +171,29 @@ class DominoTest < MiniTest::Unit::TestCase
   end
 
   def test_find_by_with_multiple_attributes
-    assert_equal 'Alice', Dom::Person.find_by(biography: 'Alice is fun', age: 23, favorite_color: 'Blue').name
+    assert_equal 'Alice', Dom::Person.find_by(biography: 'Alice is fun', age: 23, favorite_color: 'Blue', rank: 1).name
+  end
+
+  def test_find_by_without_match
+    assert_nil Dom::Person.find_by(foo: 'bar')
   end
 
   def test_find_by_without_selector
     assert_raises Domino::Error do
-      Dom::NoSelector.find_by(foo: "bar")
+      Dom::NoSelector.find_by(foo: 'bar')
     end
+  end
+
+  def test_find_by_class_combinator_attribute
+    assert_equal 'Alice', Dom::Person.find_by(active: true).name
+  end
+
+  def test_find_by_data_key_combinator_attribute
+    assert_equal 'Donna', Dom::Person.find_by(blocked: true).name
+  end
+
+  def test_find_by_data_combinator_attribute
+    assert_equal 'Charlie', Dom::Person.find_by(rank: 2).name
   end
 
   def test_find_by_bang
@@ -179,36 +201,44 @@ class DominoTest < MiniTest::Unit::TestCase
   end
 
   def test_find_by_bang_with_multiple_attributes
-    assert_equal 'Alice', Dom::Person.find_by!(biography: 'Alice is fun', age: 23, favorite_color: 'Blue').name
+    assert_equal 'Alice', Dom::Person.find_by!(biography: 'Alice is fun', age: 23, favorite_color: 'Blue', rank: 1).name
   end
 
   def test_find_by_bang_without_selector
     assert_raises Domino::Error do
-      Dom::NoSelector.find_by(foo: "bar")
+      Dom::NoSelector.find_by(foo: 'bar')
     end
   end
 
   def test_find_by_bang_without_match
     assert_raises Capybara::ElementNotFound do
-      Dom::Person.find_by!(foo: "bar")
+      Dom::Person.find_by!(foo: 'bar')
     end
   end
 
   def test_where_with_single_attribute
-    assert_equal %w(Bob Charlie), Dom::Person.where(favorite_color: "Red").map(&:name)
+    assert_equal %w[Bob Charlie], Dom::Person.where(favorite_color: 'Red').map(&:name)
   end
 
   def test_where_with_multiple_attributes
-    assert_equal %w(Alice), Dom::Person.where(age: 23, favorite_color: 'Blue').map(&:name)
+    assert_equal %w[Alice], Dom::Person.where(age: 23, favorite_color: 'Blue').map(&:name)
+  end
+
+  def test_where_with_class_combinator_attribute
+    assert_equal %w[Bob Charlie Donna], Dom::Person.where(active: false).map(&:name)
+  end
+
+  def test_where_with_data_key_combinator_attribute
+    assert_equal %w[Donna], Dom::Person.where(blocked: true).map(&:name)
   end
 
   def test_where_without_match
-    assert_equal [], Dom::Person.where(favorite_color: "Yellow")
+    assert_equal [], Dom::Person.where(favorite_color: 'Yellow')
   end
 
   def test_where_without_selector
     assert_raises Domino::Error do
-      Dom::NoSelector.where(foo: "bar")
+      Dom::NoSelector.where(foo: 'bar')
     end
   end
 end
