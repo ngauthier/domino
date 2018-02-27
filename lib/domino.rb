@@ -214,10 +214,6 @@ class Domino
       end
     end
 
-    def match_value?(node, value)
-      value === value(node)
-    end
-
     # Get the text of the first dom element matching a selector
     #
     #   Dom::Post.all.first.attribute('.title')
@@ -231,11 +227,15 @@ class Domino
       nil
     end
 
-    def combinator?
-      selector[0] == "&".freeze
+    def match_value?(node, value)
+      value === value(node)
     end
 
     private
+
+    def combinator?
+      selector[0] == "&".freeze
+    end
 
     def combinator
       @combinator ||= selector.sub(/&/, "") if combinator?

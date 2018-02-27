@@ -174,10 +174,26 @@ class DominoTest < MiniTest::Unit::TestCase
     assert_equal 'Alice', Dom::Person.find_by(biography: 'Alice is fun', age: 23, favorite_color: 'Blue', rank: 1).name
   end
 
+  def test_find_by_without_match
+    assert_nil Dom::Person.find_by(foo: 'bar')
+  end
+
   def test_find_by_without_selector
     assert_raises Domino::Error do
       Dom::NoSelector.find_by(foo: 'bar')
     end
+  end
+
+  def test_find_by_class_combinator_attribute
+    assert_equal 'Alice', Dom::Person.find_by(active: true).name
+  end
+
+  def test_find_by_data_key_combinator_attribute
+    assert_equal 'Donna', Dom::Person.find_by(blocked: true).name
+  end
+
+  def test_find_by_data_combinator_attribute
+    assert_equal 'Charlie', Dom::Person.find_by(rank: 2).name
   end
 
   def test_find_by_bang
@@ -208,16 +224,6 @@ class DominoTest < MiniTest::Unit::TestCase
     assert_equal %w[Alice], Dom::Person.where(age: 23, favorite_color: 'Blue').map(&:name)
   end
 
-  def test_where_without_match
-    assert_equal [], Dom::Person.where(favorite_color: 'Yellow')
-  end
-
-  def test_where_without_selector
-    assert_raises Domino::Error do
-      Dom::NoSelector.where(foo: 'bar')
-    end
-  end
-
   def test_where_with_class_combinator_attribute
     assert_equal %w[Bob Charlie Donna], Dom::Person.where(active: false).map(&:name)
   end
@@ -226,15 +232,13 @@ class DominoTest < MiniTest::Unit::TestCase
     assert_equal %w[Donna], Dom::Person.where(blocked: true).map(&:name)
   end
 
-  def test_find_by_class_combinator_attribute
-    assert_equal 'Alice', Dom::Person.find_by(active: true).name
+  def test_where_without_match
+    assert_equal [], Dom::Person.where(favorite_color: 'Yellow')
   end
 
-  def test_find_by_data_key_combinator_attribute
-    assert_equal 'Donna', Dom::Person.find_by(blocked: true).name
-  end
-
-  def test_find_by_data_combinator_attribute
-    assert_equal 'Charlie', Dom::Person.find_by(rank: 2).name
+  def test_where_without_selector
+    assert_raises Domino::Error do
+      Dom::NoSelector.where(foo: 'bar')
+    end
   end
 end
