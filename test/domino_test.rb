@@ -34,7 +34,7 @@ class TestApplication
                 <p class='bio'>Charlie is wild</p>
                 <p class='fav-color'>Red</p>
               </div>
-              <div class='person' data-rank="7">
+              <div class='person' data-rank="7" data-blocked>
                 <h2 class='name'>Donna</h2>
                 <p class='last-name'>Summer</p>
                 <p class='bio'>Donna is quiet</p>
@@ -65,6 +65,7 @@ class DominoTest < MiniTest::Unit::TestCase
       attribute :age, &:to_i
       attribute :rank, '&[data-rank]', &:to_i
       attribute :active, '&.active'
+      attribute(:blocked, '&[data-blocked]') { |a| !a.nil? }
     end
 
     class Animal < Domino
@@ -137,7 +138,7 @@ class DominoTest < MiniTest::Unit::TestCase
   end
 
   def test_attributes
-    assert_equal({ name: 'Alice', last_name: 'Cooper', biography: 'Alice is fun', favorite_color: 'Blue', age: 23, rank: 1, active: true }, Dom::Person.first.attributes)
+    assert_equal({ name: 'Alice', last_name: 'Cooper', biography: 'Alice is fun', favorite_color: 'Blue', age: 23, rank: 1, active: true, blocked: false }, Dom::Person.first.attributes)
   end
 
   def test_callback
@@ -179,7 +180,7 @@ class DominoTest < MiniTest::Unit::TestCase
   end
 
   def test_find_by_bang_with_multiple_attributes
-    assert_equal 'Alice', Dom::Person.find_by!(biography: 'Alice is fun', age: 23, favorite_color: 'Blue').name
+    assert_equal 'Alice', Dom::Person.find_by!(biography: 'Alice is fun', age: 23, favorite_color: 'Blue', rank: 1).name
   end
 
   def test_find_by_bang_without_selector
@@ -210,5 +211,25 @@ class DominoTest < MiniTest::Unit::TestCase
     assert_raises Domino::Error do
       Dom::NoSelector.where(foo: 'bar')
     end
+  end
+
+  def test_where_with_class_combinator_attribute
+    assert_equal %w(Bob Charlie Donna), Dom::Person.where(active: false).map(&:name)
+  end
+
+  def test_where_with_data_key_combinator_attribute
+    assert_equal %w(Donna), Dom::Person.where(blocked: true).map(&:name)
+  end
+
+  def test_find_by_class_combinator_attribute
+    assert_equal 'Alice', Dom::Person.find_by(active: true).name
+  end
+
+  def test_find_by_data_key_combinator_attribute
+    assert_equal 'Donna', Dom::Person.find_by(blocked: true).name
+  end
+
+  def test_find_by_data_combinator_attribute
+    assert_equal 'Charlie', Dom::Person.find_by(rank: 2).name
   end
 end
