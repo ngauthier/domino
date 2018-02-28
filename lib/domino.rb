@@ -187,6 +187,92 @@ class Domino
     end
   end
 
+  class Form < Domino
+    def self.key(k)
+      @key = k
+    end
+
+    def self.fields
+      @fields ||= {}
+    end
+
+    def self.field(*args)
+      options = args.last.is_a?(::Hash) ? args.pop : {}
+      attribute, locator = *args
+
+      locator ||= "#{@key}[#{attribute}]"
+
+      custom_field = options.delete(:using)
+
+      fields[attribute] =
+        if custom_field && custom_field.ancestors.include?(Field)
+          custom_field.new(attribute, locator, options)
+        elsif options[:type] == :select
+          SelectField.new(attribute, locator, options)
+        else
+          Field.new(attribute, locator, options)
+        end
+
+      define_method :"#{attribute}" do
+        self.class.fields[attribute].read(node)
+      end
+
+      define_method :"#{attribute}=" do |value|
+        self.class.fields[attribute].write(node, value)
+      end
+    end
+
+    def self.create(attributes = {})
+      first.create(attributes)
+    end
+
+    def self.update(attributes = {})
+      first.update(attributes)
+    end
+
+    def create(attributes = {})
+      set(attributes)
+      save
+    end
+
+    def update(attributes = {})
+      set(attributes)
+      save
+    end
+
+    def set(attributes = {})
+      attributes.each { |k, v| send("#{k}=", v) }
+    end
+
+    def save
+      find('input[name="commit"]').click
+    end
+
+    class Field
+      attr_reader :name, :locator, :options
+
+      def initialize(name, locator, options = {})
+        @name = name
+        @locator = locator
+        @options = options
+      end
+
+      def read(node)
+        node.find_field(locator, options).value
+      end
+
+      def write(node, value)
+        node.fill_in(locator, with: value, **options)
+      end
+    end
+
+    class SelectField < Field
+      def write(node, value)
+        node.select value, from: locator
+      end
+    end
+  end
+
   private
 
   # Store the capybara node internally

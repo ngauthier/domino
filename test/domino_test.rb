@@ -9,7 +9,16 @@ require 'minitest/mock'
 
 class TestApplication
   def call(env)
-    [200, { 'Content-Type' => 'text/plain' }, [root]]
+    [200, { 'Content-Type' => 'text/plain' }, [response(env)]]
+  end
+
+  def response(env)
+    case env.fetch('PATH_INFO')
+    when '/'
+      root
+    when '/people/1/edit'
+      edit
+    end
   end
 
   def root
@@ -52,13 +61,77 @@ class TestApplication
       </html>
     HTML
   end
+
+  def edit
+    <<-HTML
+      <html>
+        <body>
+          <h1>Edit Person</h1>
+
+          <form action="/person/23" method="post" class="person">
+            <div class="input name">
+              <label for="person_name">First Name</label>
+              <input type="text" id="person_name" name="person[name]" value="Alice" />
+            </div>
+
+            <div class="input last_name">
+              <label for="person_name">Last Name</label>
+              <input type="text" id="person_last_name" name="person[last_name]" value="Cooper" />
+            </div>
+
+            <div class="input bio">
+              <label for="person_bio">Biography</label>
+              <textarea id="person_bio" name="person[bio]">Alice is fun</textarea>
+            </div>
+
+            <div class="input fav_color">
+              <label for="person_fav_color">Favorite Color</label>
+              <select id="person_fav_color" name="person[fav_color]">
+                <option val="red">Red</option>
+                <option val="blue" selected>Blue</option>
+                <option val="green">Green</option>
+              </select>
+            </div>
+
+            <div class="input age">
+              <label for="person_age">Biography</label>
+              <input type="number" min="0" step="1" id="person_age" name="person[age]" value="23" />
+            </div>
+
+            <div class="input vehicles">
+              <label for="person_vehicles_bike"><input id="person_vehicles_bike" type="checkbox" name="person[vehicles][]" value="Bike">Bike</label>
+              <label for="person_vehicles_car"><input id="person_vehicles_car" type="checkbox" name="person[vehicles][]" value="Car">Car</label>
+            </div>
+
+            <div class="actions">
+              <input type="submit" name="commit" value="Update Person" />
+            </div>
+          </form>
+        </body>
+      </html>
+    HTML
+  end
 end
 
 Capybara.app = TestApplication.new
 
 class DominoTest < MiniTest::Unit::TestCase
   include Capybara::DSL
+
   module Dom
+    class CheckBoxField < Domino::Form::Field
+      def read(node)
+        node.find(locator).all("input[type=checkbox]").select{|c| c.checked? }.map(&:value)
+      end
+
+      def write(node, value)
+        value = Array(value)
+        node.find(locator).all("input[type=checkbox]").each do |box|
+          box.set(value.include?(box.value))
+        end
+      end
+    end
+
     class Person < Domino
       selector '#people .person'
 
@@ -71,6 +144,18 @@ class DominoTest < MiniTest::Unit::TestCase
       attribute :active, '&.active'
       attribute :uuid, '&[data-uuid]'
       attribute(:blocked, '&[data-blocked]') { |a| !a.nil? }
+
+      class Form < Domino::Form
+        selector 'form.person'
+        key 'person'
+
+        field :name, 'First Name'
+        field :last_name
+        field :biography, 'person[bio]'
+        field :favorite_color, 'Favorite Color', type: :select
+        field :age, 'person_age'
+        field :vehicles, '.input.vehicles', using: CheckBoxField
+      end
     end
 
     class Animal < Domino
@@ -92,6 +177,28 @@ class DominoTest < MiniTest::Unit::TestCase
 
   def setup
     visit '/'
+  end
+
+  def test_form
+    visit '/people/1/edit'
+
+    form = Dom::Person::Form.find!
+
+    assert_equal 'Alice', form.name
+    assert_equal 'Cooper', form.last_name
+    assert_equal 'Alice is fun', form.biography
+    assert_equal 'Blue', form.favorite_color
+    assert_equal '23', form.age
+    assert_equal [], form.vehicles
+
+    form.set name: 'Marie', last_name: 'Curie', biography: 'Scientific!', age: 25, favorite_color: "Red", vehicles: ["Bike", "Car"]
+
+    assert_equal 'Marie', form.name
+    assert_equal 'Curie', form.last_name
+    assert_equal 'Scientific!', form.biography
+    assert_equal 'Red', form.favorite_color
+    assert_equal '25', form.age
+    assert_equal ["Bike", "Car"], form.vehicles
   end
 
   def test_enumerable
