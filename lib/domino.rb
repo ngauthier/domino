@@ -188,6 +188,49 @@ class Domino
   end
 
   class Form < Domino
+    class Field
+      attr_reader :name, :locator, :options
+
+      def initialize(name, locator, options = {})
+        @name = name
+        @locator = locator
+        @options = options
+      end
+
+      def read(node)
+        node.find_field(locator, options).value
+      end
+
+      def write(node, value)
+        node.fill_in(locator, with: value, **options)
+      end
+    end
+
+    class SelectField < Field
+      def write(node, value)
+        node.select value, from: locator
+      end
+    end
+
+    class BooleanField < Domino::Form::Field
+      def read(node)
+        node.find_field(locator, options).checked?
+      end
+
+      def write(node, value)
+        if value
+          node.check(locator, options)
+        else
+          node.uncheck(locator, options)
+        end
+      end
+    end
+
+    FIELD_TYPES = {
+      select: SelectField,
+      boolean: BooleanField
+    }.freeze
+
     def self.key(k)
       @key = k
     end
@@ -200,18 +243,12 @@ class Domino
       options = args.last.is_a?(::Hash) ? args.pop : {}
       attribute, locator = *args
 
-      locator ||= "#{@key}[#{attribute}]"
+      locator ||= !@key.to_s.empty? ? "#{@key}[#{attribute}]" : attribute
 
-      custom_field = options.delete(:using)
+      field_type = options.delete(:as)
+      field_class = field_type.is_a?(Class) && field_type.ancestors.include?(Field) ? field_type : FIELD_TYPES[field_type] || Field
 
-      fields[attribute] =
-        if custom_field && custom_field.ancestors.include?(Field)
-          custom_field.new(attribute, locator, options)
-        elsif options[:type] == :select
-          SelectField.new(attribute, locator, options)
-        else
-          Field.new(attribute, locator, options)
-        end
+      fields[attribute] = field_class.new(attribute, locator, options)
 
       define_method :"#{attribute}" do
         self.class.fields[attribute].read(node)
@@ -246,30 +283,6 @@ class Domino
 
     def save
       find('input[name="commit"]').click
-    end
-
-    class Field
-      attr_reader :name, :locator, :options
-
-      def initialize(name, locator, options = {})
-        @name = name
-        @locator = locator
-        @options = options
-      end
-
-      def read(node)
-        node.find_field(locator, options).value
-      end
-
-      def write(node, value)
-        node.fill_in(locator, with: value, **options)
-      end
-    end
-
-    class SelectField < Field
-      def write(node, value)
-        node.select value, from: locator
-      end
     end
   end
 

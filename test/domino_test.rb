@@ -98,6 +98,14 @@ class TestApplication
               <input type="number" min="0" step="1" id="person_age" name="person[age]" value="23" />
             </div>
 
+            <div class="input is_human">
+              <input type="hidden" name="is_human" value="0">
+              <label for="is_human">
+                <input id="is_human" type="checkbox" name="is_human" value="1">
+                I'm a human
+              </label>
+            </div>
+
             <div class="input vehicles">
               <label for="person_vehicles_bike"><input id="person_vehicles_bike" type="checkbox" name="person[vehicles][]" value="Bike">Bike</label>
               <label for="person_vehicles_car"><input id="person_vehicles_car" type="checkbox" name="person[vehicles][]" value="Car">Car</label>
@@ -119,14 +127,14 @@ class DominoTest < MiniTest::Unit::TestCase
   include Capybara::DSL
 
   module Dom
-    class CheckBoxField < Domino::Form::Field
+    class CheckBoxesField < Domino::Form::Field
       def read(node)
-        node.find(locator).all("input[type=checkbox]").select{|c| c.checked? }.map(&:value)
+        node.find(locator).all('input[type=checkbox]').select(&:checked?).map(&:value)
       end
 
       def write(node, value)
         value = Array(value)
-        node.find(locator).all("input[type=checkbox]").each do |box|
+        node.find(locator).all('input[type=checkbox]').each do |box|
           box.set(value.include?(box.value))
         end
       end
@@ -152,9 +160,10 @@ class DominoTest < MiniTest::Unit::TestCase
         field :name, 'First Name'
         field :last_name
         field :biography, 'person[bio]'
-        field :favorite_color, 'Favorite Color', type: :select
+        field :favorite_color, 'Favorite Color', as: :select
         field :age, 'person_age'
-        field :vehicles, '.input.vehicles', using: CheckBoxField
+        field :vehicles, '.input.vehicles', as: CheckBoxesField
+        field :is_human, 'is_human', as: :boolean
       end
     end
 
@@ -182,23 +191,25 @@ class DominoTest < MiniTest::Unit::TestCase
   def test_form
     visit '/people/1/edit'
 
-    form = Dom::Person::Form.find!
+    person = Dom::Person::Form.find!
 
-    assert_equal 'Alice', form.name
-    assert_equal 'Cooper', form.last_name
-    assert_equal 'Alice is fun', form.biography
-    assert_equal 'Blue', form.favorite_color
-    assert_equal '23', form.age
-    assert_equal [], form.vehicles
+    assert_equal false, person.is_human
+    assert_equal 'Alice', person.name
+    assert_equal 'Cooper', person.last_name
+    assert_equal 'Alice is fun', person.biography
+    assert_equal 'Blue', person.favorite_color
+    assert_equal '23', person.age
+    assert_equal [], person.vehicles
 
-    form.set name: 'Marie', last_name: 'Curie', biography: 'Scientific!', age: 25, favorite_color: "Red", vehicles: ["Bike", "Car"]
+    person.set name: 'Marie', last_name: 'Curie', biography: 'Scientific!', age: 25, favorite_color: 'Red', vehicles: %w[Bike Car], is_human: true
 
-    assert_equal 'Marie', form.name
-    assert_equal 'Curie', form.last_name
-    assert_equal 'Scientific!', form.biography
-    assert_equal 'Red', form.favorite_color
-    assert_equal '25', form.age
-    assert_equal ["Bike", "Car"], form.vehicles
+    assert_equal 'Marie', person.name
+    assert_equal 'Curie', person.last_name
+    assert_equal 'Scientific!', person.biography
+    assert_equal 'Red', person.favorite_color
+    assert_equal '25', person.age
+    assert_equal %w[Bike Car], person.vehicles
+    assert_equal true, person.is_human
   end
 
   def test_enumerable
