@@ -233,11 +233,11 @@ class Domino
     private
 
     def combinator?
-      selector[0] == "&".freeze
+      selector[0] == '&'.freeze
     end
 
     def combinator
-      @combinator ||= selector.sub(/&/, "") if combinator?
+      @combinator ||= selector.sub(/&/, '') if combinator?
     end
 
     def node_attribute_key
