@@ -165,6 +165,12 @@ class DominoTest < MiniTest::Unit::TestCase
         field :vehicles, '.input.vehicles', as: CheckBoxesField
         field :is_human, 'is_human', as: :boolean
       end
+
+      class FormB < Domino::Form
+        selector 'form.person'
+
+        field :is_human, as: :boolean
+      end
     end
 
     class Animal < Domino
@@ -193,13 +199,13 @@ class DominoTest < MiniTest::Unit::TestCase
 
     person = Dom::Person::Form.find!
 
-    assert_equal false, person.is_human
     assert_equal 'Alice', person.name
     assert_equal 'Cooper', person.last_name
     assert_equal 'Alice is fun', person.biography
     assert_equal 'Blue', person.favorite_color
     assert_equal '23', person.age
     assert_equal [], person.vehicles
+    assert_equal false, person.is_human
 
     person.set name: 'Marie', last_name: 'Curie', biography: 'Scientific!', age: 25, favorite_color: 'Red', vehicles: %w[Bike Car], is_human: true
 
@@ -210,6 +216,9 @@ class DominoTest < MiniTest::Unit::TestCase
     assert_equal '25', person.age
     assert_equal %w[Bike Car], person.vehicles
     assert_equal true, person.is_human
+
+    formb = Dom::Person::FormB.find!
+    assert_equal true, formb.is_human
   end
 
   def test_enumerable
