@@ -26,6 +26,9 @@ class DominoFormTest < MiniTest::Unit::TestCase
       field :age, 'person_age', &:to_i
       field :vehicles, '.input.vehicles', as: CheckBoxesField
       field :is_human, 'is_human', as: :boolean
+
+      attribute :action, '&[action]'
+      attribute :submit_method, '&[method]'
     end
 
     class PersonFormB < Domino::Form
@@ -131,5 +134,9 @@ class DominoFormTest < MiniTest::Unit::TestCase
     assert_equal 25, updated_person.age
     assert_equal %w[Bike Car], updated_person.vehicles
     assert_equal true, updated_person.is_human
+  end
+
+  def test_supports_normal_attributes
+    assert_equal({ action: '/people/23', submit_method: 'post' }, Dom::PersonForm.find!.attributes)
   end
 end

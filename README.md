@@ -116,6 +116,10 @@ module Dom
 
     # locate a field with a name that doesn't use the key
     field :is_human, 'is_human', as: :boolean
+
+    # still supports attributes for non-input nodes
+    attribute :action, "&[action]"
+    attribute :submit_method, "&[method]"
   end
 end
 ```
