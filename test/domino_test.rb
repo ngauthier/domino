@@ -16,8 +16,12 @@ class TestApplication
     case env.fetch('PATH_INFO')
     when '/'
       root
-    when '/people/1/edit'
-      edit
+    when '/people/23/edit'
+      params = { 'person' => { 'id' => 23, 'name' => 'Alice', 'last_name' => 'Cooper', 'bio' => 'Alice is fun', 'fav_color' => 'blue', 'age' => 23, 'vehicles' => [] }, 'is_human' => false }
+      edit params
+    when '/people/23'
+      params = Rack::Utils.parse_nested_query(env.fetch('rack.input').read)
+      edit params
     end
   end
 
@@ -62,53 +66,54 @@ class TestApplication
     HTML
   end
 
-  def edit
+  def edit(params = { 'person' => {} })
+    person = params['person']
     <<-HTML
       <html>
         <body>
           <h1>Edit Person</h1>
 
-          <form action="/person/23" method="post" class="person">
+          <form action="/people/#{person['id']}" method="post" class="person">
             <div class="input name">
               <label for="person_name">First Name</label>
-              <input type="text" id="person_name" name="person[name]" value="Alice" />
+              <input type="text" id="person_name" name="person[name]" value="#{person['name']}" />
             </div>
 
             <div class="input last_name">
               <label for="person_name">Last Name</label>
-              <input type="text" id="person_last_name" name="person[last_name]" value="Cooper" />
+              <input type="text" id="person_last_name" name="person[last_name]" value="#{person['last_name']}" />
             </div>
 
             <div class="input bio">
               <label for="person_bio">Biography</label>
-              <textarea id="person_bio" name="person[bio]">Alice is fun</textarea>
+              <textarea id="person_bio" name="person[bio]">#{person['bio']}</textarea>
             </div>
 
             <div class="input fav_color">
               <label for="person_fav_color">Favorite Color</label>
               <select id="person_fav_color" name="person[fav_color]">
-                <option val="red">Red</option>
-                <option val="blue" selected>Blue</option>
-                <option val="green">Green</option>
+                <option val="red" #{'selected' if person['fav_color'] == 'red'}>Red</option>
+                <option val="blue" #{'selected' if person['fav_color'] == 'blue'}>Blue</option>
+                <option val="green" #{'selected' if person['fav_color'] == 'green'}>Green</option>
               </select>
             </div>
 
             <div class="input age">
               <label for="person_age">Biography</label>
-              <input type="number" min="0" step="1" id="person_age" name="person[age]" value="23" />
+              <input type="number" min="0" step="1" id="person_age" name="person[age]" value="#{person['age']}" />
             </div>
 
             <div class="input is_human">
               <input type="hidden" name="is_human" value="0">
               <label for="is_human">
-                <input id="is_human" type="checkbox" name="is_human" value="1">
+                <input id="is_human" type="checkbox" name="is_human" value="1" #{'checked' if params['is_human']}>
                 I'm a human
               </label>
             </div>
 
             <div class="input vehicles">
-              <label for="person_vehicles_bike"><input id="person_vehicles_bike" type="checkbox" name="person[vehicles][]" value="Bike">Bike</label>
-              <label for="person_vehicles_car"><input id="person_vehicles_car" type="checkbox" name="person[vehicles][]" value="Car">Car</label>
+              <label for="person_vehicles_bike"><input id="person_vehicles_bike" type="checkbox" name="person[vehicles][]" value="Bike" #{'checked' if person['vehicles'].include?('Bike')}>Bike</label>
+              <label for="person_vehicles_car"><input id="person_vehicles_car" type="checkbox" name="person[vehicles][]" value="Car" #{'checked' if person['vehicles'].include?('Car')}>Car</label>
             </div>
 
             <div class="actions">
@@ -195,7 +200,7 @@ class DominoTest < MiniTest::Unit::TestCase
   end
 
   def test_form
-    visit '/people/1/edit'
+    visit '/people/23/edit'
 
     person = Dom::Person::Form.find!
 
@@ -219,6 +224,17 @@ class DominoTest < MiniTest::Unit::TestCase
 
     formb = Dom::Person::FormB.find!
     assert_equal true, formb.is_human
+
+    person.save
+
+    updated_person = Dom::Person::Form.find!
+    assert_equal 'Marie', updated_person.name
+    assert_equal 'Curie', updated_person.last_name
+    assert_equal 'Scientific!', updated_person.biography
+    assert_equal 'Red', updated_person.favorite_color
+    assert_equal '25', updated_person.age
+    assert_equal %w[Bike Car], updated_person.vehicles
+    assert_equal true, updated_person.is_human
   end
 
   def test_enumerable
