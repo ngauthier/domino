@@ -117,6 +117,15 @@ class TestApplication
               <label for="person_vehicles_car"><input id="person_vehicles_car" type="checkbox" name="person[vehicles][]" value="Car" #{'checked' if person['vehicles'].include?('Car')}>Car</label>
             </div>
 
+            <div class="input allergies">
+              <label for="allergies">Allergies</label>
+              <select id="allergies" name="allergies" multiple="multiple">
+                <option val="peanut" #{'selected="selected"' if Array(params['allergies']).include?('peanut')}>Peanut</option>
+                <option val="corn" #{'selected="selected"' if Array(person['allergies']).include?('corn')}>Corn</option>
+                <option val="wheat" #{'selected="selected"' if Array(person['allergies']).include?('wheat')}>Wheat</option>
+              </select>
+            </div>
+
             <div class="actions">
               <input type="submit" name="commit" value="Update Person" />
             </div>

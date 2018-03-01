@@ -32,6 +32,7 @@ class DominoFormTest < MiniTest::Unit::TestCase
       selector 'form.person'
 
       field :is_human, as: :boolean
+      field :allergies, as: :select, multiple: true
     end
   end
 
@@ -53,6 +54,15 @@ class DominoFormTest < MiniTest::Unit::TestCase
 
   def test_form_field_as_select_field_type
     assert_equal 'Blue', Dom::PersonForm.find!.favorite_color
+  end
+
+  def test_form_field_as_multiple_select_field_type
+    formb = Dom::PersonFormB.find!
+    assert_equal [], formb.allergies
+    formb.allergies = %w[Peanut Corn]
+    assert_equal %w[Peanut Corn], formb.allergies
+    formb.allergies = ['Corn']
+    assert_equal ['Corn'], formb.allergies
   end
 
   def test_form_field_with_id_locator_and_callback

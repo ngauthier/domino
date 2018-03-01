@@ -105,6 +105,9 @@ module Dom
     # locate select field by label, acts as select
     field :favorite_color, 'Favorite Color', as: :select
 
+    # support multiple selects for setting and reading value as an array
+    field :allergies, as: :select, multiple: true
+
     # locate by id, convert value via callback
     field :age, 'person_age', &:to_i
 
