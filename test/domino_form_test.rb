@@ -88,7 +88,7 @@ class DominoFormTest < MiniTest::Unit::TestCase
   def test_form_set_nil_clears_field
     person = Dom::PersonForm.find!
     person.name = nil
-    assert_equal "", person.name
+    assert_equal '', person.name
   end
 
   def test_form_set_by_attribute_writer

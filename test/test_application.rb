@@ -93,9 +93,9 @@ class TestApplication
             <div class="input fav_color">
               <label for="person_fav_color">Favorite Color</label>
               <select id="person_fav_color" name="person[fav_color]">
-                <option val="red" #{'selected' if person['fav_color'] == 'red'}>Red</option>
-                <option val="blue" #{'selected' if person['fav_color'] == 'blue'}>Blue</option>
-                <option val="green" #{'selected' if person['fav_color'] == 'green'}>Green</option>
+                <option val="red" #{'selected="selected"' if person['fav_color'] == 'red'}>Red</option>
+                <option val="blue" #{'selected="selected"' if person['fav_color'] == 'blue'}>Blue</option>
+                <option val="green" #{'selected="selected"' if person['fav_color'] == 'green'}>Green</option>
               </select>
             </div>
 
