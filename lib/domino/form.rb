@@ -13,7 +13,19 @@ class Domino::Form < Domino
   end
 
   def self.fields
-    @fields ||= {}
+    field_definitions.keys
+  end
+
+  def self.field_definitions
+    @field_definitions ||= {}
+  end
+
+  def self.submit_with(submitter)
+    @submitter = submitter
+  end
+
+  def self.submitter
+    @submitter ||= "input[type='submit']"
   end
 
   def self.field(*args, &callback)
@@ -25,14 +37,14 @@ class Domino::Form < Domino
     field_type = options.delete(:as)
     field_class = field_type.is_a?(Class) && field_type.ancestors.include?(Field) ? field_type : FIELD_TYPES[field_type] || Field
 
-    fields[attribute] = field_class.new(attribute, locator, options, &callback)
+    field_definitions[attribute] = field_class.new(attribute, locator, options, &callback)
 
     define_method :"#{attribute}" do
-      self.class.fields[attribute].value(node)
+      self.class.field_definitions[attribute].value(node)
     end
 
     define_method :"#{attribute}=" do |value|
-      self.class.fields[attribute].write(node, value)
+      self.class.field_definitions[attribute].write(node, value)
     end
   end
 
@@ -59,6 +71,12 @@ class Domino::Form < Domino
   end
 
   def save
-    find('input[name="commit"]').click
+    find(self.class.submitter).click
+  end
+
+  def fields
+    self.class.fields.each_with_object({}) do |field, memo|
+      memo[field] = send(field)
+    end
   end
 end

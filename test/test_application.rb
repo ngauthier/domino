@@ -106,8 +106,8 @@ class TestApplication
 
             <div class="input is_human">
               <input type="hidden" name="is_human" value="0">
-              <label for="is_human">
-                <input id="is_human" type="checkbox" name="is_human" value="1" #{'checked' if params['is_human']}>
+              <label for="is_a_human">
+                <input id="is_a_human" type="checkbox" name="is_human" value="1" #{'checked' if params['is_human']}>
                 I'm a human
               </label>
             </div>

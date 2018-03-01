@@ -69,7 +69,7 @@ class DominoFormTest < MiniTest::Unit::TestCase
 
   def test_form_set_multiple_attributes
     person = Dom::PersonForm.find!
-    person.set name: 'Marie', last_name: 'Curie', biography: 'Scientific!', age: 25, favorite_color: 'Red', vehicles: %w[Bike Car], is_human: true
+    person.set name: 'Marie', last_name: 'Curie', biography: 'Scientific!', favorite_color: 'Red', age: 25, vehicles: %w[Bike Car], is_human: true
 
     assert_equal 'Marie', person.name
     assert_equal 'Curie', person.last_name
@@ -78,6 +78,11 @@ class DominoFormTest < MiniTest::Unit::TestCase
     assert_equal 25, person.age
     assert_equal %w[Bike Car], person.vehicles
     assert_equal true, person.is_human
+  end
+
+  def test_form_fields
+    person = Dom::PersonForm.find!
+    assert_equal({ name: 'Alice', last_name: 'Cooper', biography: 'Alice is fun', favorite_color: 'Blue', age: 23, vehicles: [], is_human: false }, person.fields)
   end
 
   def test_form_set_nil_clears_field
