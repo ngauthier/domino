@@ -1,5 +1,4 @@
 require 'capybara/dsl'
-require 'set'
 # To create a basic Domino class, inherit from Domino and
 # define a selector and attributes:
 #
