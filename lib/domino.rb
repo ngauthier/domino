@@ -189,12 +189,22 @@ class Domino
 
   class Form < Domino
     class Field
-      attr_reader :name, :locator, :options
+      attr_reader :name, :locator, :options, :callback
 
-      def initialize(name, locator, options = {})
+      def initialize(name, locator, options = {}, &callback)
         @name = name
         @locator = locator
         @options = options
+        @callback = callback
+      end
+
+      def value(node)
+        val = read(node)
+        if val && callback.is_a?(Proc)
+          callback.call(val)
+        else
+          val
+        end
       end
 
       def read(node)
@@ -239,7 +249,7 @@ class Domino
       @fields ||= {}
     end
 
-    def self.field(*args)
+    def self.field(*args, &callback)
       options = args.last.is_a?(::Hash) ? args.pop : {}
       attribute, locator = *args
 
@@ -248,10 +258,10 @@ class Domino
       field_type = options.delete(:as)
       field_class = field_type.is_a?(Class) && field_type.ancestors.include?(Field) ? field_type : FIELD_TYPES[field_type] || Field
 
-      fields[attribute] = field_class.new(attribute, locator, options)
+      fields[attribute] = field_class.new(attribute, locator, options, &callback)
 
       define_method :"#{attribute}" do
-        self.class.fields[attribute].read(node)
+        self.class.fields[attribute].value(node)
       end
 
       define_method :"#{attribute}=" do |value|

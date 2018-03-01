@@ -17,7 +17,17 @@ class TestApplication
     when '/'
       root
     when '/people/23/edit'
-      params = { 'person' => { 'id' => 23, 'name' => 'Alice', 'last_name' => 'Cooper', 'bio' => 'Alice is fun', 'fav_color' => 'blue', 'age' => 23, 'vehicles' => [] }, 'is_human' => false }
+      params = {
+        'person' => {
+          'id' => 23,
+          'name' => 'Alice',
+          'last_name' => 'Cooper',
+          'bio' => 'Alice is fun',
+          'fav_color' => 'blue',
+          'age' => 23,
+          'vehicles' => []
+        }, 'is_human' => false
+      }
       edit params
     when '/people/23'
       params = Rack::Utils.parse_nested_query(env.fetch('rack.input').read)
@@ -166,7 +176,7 @@ class DominoTest < MiniTest::Unit::TestCase
         field :last_name
         field :biography, 'person[bio]'
         field :favorite_color, 'Favorite Color', as: :select
-        field :age, 'person_age'
+        field :age, 'person_age', &:to_i
         field :vehicles, '.input.vehicles', as: CheckBoxesField
         field :is_human, 'is_human', as: :boolean
       end
@@ -208,7 +218,7 @@ class DominoTest < MiniTest::Unit::TestCase
     assert_equal 'Cooper', person.last_name
     assert_equal 'Alice is fun', person.biography
     assert_equal 'Blue', person.favorite_color
-    assert_equal '23', person.age
+    assert_equal 23, person.age
     assert_equal [], person.vehicles
     assert_equal false, person.is_human
 
@@ -218,9 +228,13 @@ class DominoTest < MiniTest::Unit::TestCase
     assert_equal 'Curie', person.last_name
     assert_equal 'Scientific!', person.biography
     assert_equal 'Red', person.favorite_color
-    assert_equal '25', person.age
+    assert_equal 25, person.age
     assert_equal %w[Bike Car], person.vehicles
     assert_equal true, person.is_human
+
+    person.age = 66
+
+    assert_equal 66, person.age
 
     formb = Dom::Person::FormB.find!
     assert_equal true, formb.is_human
@@ -232,7 +246,7 @@ class DominoTest < MiniTest::Unit::TestCase
     assert_equal 'Curie', updated_person.last_name
     assert_equal 'Scientific!', updated_person.biography
     assert_equal 'Red', updated_person.favorite_color
-    assert_equal '25', updated_person.age
+    assert_equal 66, updated_person.age
     assert_equal %w[Bike Car], updated_person.vehicles
     assert_equal true, updated_person.is_human
   end
