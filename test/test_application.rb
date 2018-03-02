@@ -22,7 +22,7 @@ class TestApplication
       edit params
     when '/people/23'
       params = Rack::Utils.parse_nested_query(env.fetch('rack.input').read)
-      edit params
+      edit params.merge(flash: "Person updated successfully.")
     end
   end
 
@@ -72,6 +72,7 @@ class TestApplication
     <<-HTML
       <html>
         <body>
+          <div class="flash">#{params[:flash]}</div>
           <h1>Edit Person</h1>
 
           <form action="/people/#{person['id']}" method="post" class="person">

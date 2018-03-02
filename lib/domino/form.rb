@@ -49,11 +49,11 @@ class Domino::Form < Domino
   end
 
   def self.create(attributes = {})
-    first.create(attributes)
+    find!.create(attributes)
   end
 
   def self.update(attributes = {})
-    first.update(attributes)
+    find!.update(attributes)
   end
 
   def create(attributes = {})

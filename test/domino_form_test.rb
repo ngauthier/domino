@@ -120,20 +120,84 @@ class DominoFormTest < MiniTest::Unit::TestCase
     assert_equal false, formb.is_human
   end
 
-  def test_save_form
+  def test_save_submits_form
     person = Dom::PersonForm.find!
-    person.set name: 'Marie', last_name: 'Curie', biography: 'Scientific!', age: 25, favorite_color: 'Red', vehicles: %w[Bike Car], is_human: true
+    refute page.has_content?('Person updated successfully.')
+
+    person.set name: 'Marie', last_name: 'Curie', biography: 'Scientific!', age: 25, favorite_color: 'Green', vehicles: %w[Bike Car], is_human: true
 
     person.save
+
+    assert page.has_content?('Person updated successfully.')
 
     updated_person = Dom::PersonForm.find!
     assert_equal 'Marie', updated_person.name
     assert_equal 'Curie', updated_person.last_name
     assert_equal 'Scientific!', updated_person.biography
-    assert_equal 'Red', updated_person.favorite_color
+    assert_equal 'Green', updated_person.favorite_color
     assert_equal 25, updated_person.age
     assert_equal %w[Bike Car], updated_person.vehicles
     assert_equal true, updated_person.is_human
+  end
+
+  def test_update_fills_and_submits_form
+    person = Dom::PersonForm.find!
+    refute page.has_content?('Person updated successfully.')
+
+    person.update name: 'Marie', last_name: 'Curie', biography: 'Scientific!', favorite_color: 'Green', age: 25, vehicles: %w[Bike Car], is_human: true
+
+    assert page.has_content?('Person updated successfully.')
+
+    updated_person = Dom::PersonForm.find!
+    assert_equal({ name: 'Marie', last_name: 'Curie', biography: 'Scientific!', favorite_color: 'Green', age: 25, vehicles: %w[Bike Car], is_human: true }, updated_person.fields)
+  end
+
+  def test_create_fills_and_submits_form
+    person = Dom::PersonForm.find!
+    refute page.has_content?('Person updated successfully.')
+
+    person.create name: 'Marie', last_name: 'Curie', biography: 'Scientific!', favorite_color: 'Green', age: 25, vehicles: %w[Bike Car], is_human: true
+
+    assert page.has_content?('Person updated successfully.')
+
+    updated_person = Dom::PersonForm.find!
+    assert_equal({ name: 'Marie', last_name: 'Curie', biography: 'Scientific!', favorite_color: 'Green', age: 25, vehicles: %w[Bike Car], is_human: true }, updated_person.fields)
+  end
+
+  def test_static_update_fills_and_submits_form
+    refute page.has_content?('Person updated successfully.')
+
+    Dom::PersonForm.create name: 'Marie', last_name: 'Curie', biography: 'Scientific!', favorite_color: 'Green', age: 25, vehicles: %w[Bike Car], is_human: true
+
+    assert page.has_content?('Person updated successfully.')
+
+    updated_person = Dom::PersonForm.find!
+    assert_equal({ name: 'Marie', last_name: 'Curie', biography: 'Scientific!', favorite_color: 'Green', age: 25, vehicles: %w[Bike Car], is_human: true }, updated_person.fields)
+  end
+
+  def test_static_create_fills_and_submits_form
+    refute page.has_content?('Person updated successfully.')
+
+    Dom::PersonForm.create name: 'Marie', last_name: 'Curie', biography: 'Scientific!', favorite_color: 'Green', age: 25, vehicles: %w[Bike Car], is_human: true
+
+    assert page.has_content?('Person updated successfully.')
+
+    updated_person = Dom::PersonForm.find!
+    assert_equal({ name: 'Marie', last_name: 'Curie', biography: 'Scientific!', favorite_color: 'Green', age: 25, vehicles: %w[Bike Car], is_human: true }, updated_person.fields)
+  end
+
+  def test_static_create_with_no_matches
+    visit "/"
+    assert_raises Capybara::ElementNotFound do
+      Dom::PersonForm.create name: 'Marie', last_name: 'Curie'
+    end
+  end
+
+  def test_static_update_with_no_matches
+    visit "/"
+    assert_raises Capybara::ElementNotFound do
+      Dom::PersonForm.update name: 'Marie', last_name: 'Curie'
+    end
   end
 
   def test_supports_normal_attributes
