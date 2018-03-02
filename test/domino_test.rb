@@ -1,4 +1,4 @@
-class DominoTest < MiniTest::Unit::TestCase
+class DominoTest < Minitest::Test
   include Capybara::DSL
 
   module Dom
