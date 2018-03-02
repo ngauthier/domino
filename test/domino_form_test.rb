@@ -22,7 +22,7 @@ class DominoFormTest < MiniTest::Unit::TestCase
       field :name, 'First Name'
       field :last_name
       field :biography, 'person[bio]'
-      field :favorite_color, 'Favorite Color', as: :select
+      field :favorite_color, 'Favorite Color', as: :select, source: :text
       field :age, 'person_age', &:to_i
       field :vehicles, '.input.vehicles', as: CheckBoxesField
       field :is_human, 'is_human', as: :boolean
@@ -35,7 +35,7 @@ class DominoFormTest < MiniTest::Unit::TestCase
       selector 'form.person'
 
       field :is_human, as: :boolean
-      field :allergies, as: :select, multiple: true
+      field :allergies, as: :select
     end
   end
 
@@ -63,9 +63,9 @@ class DominoFormTest < MiniTest::Unit::TestCase
     formb = Dom::PersonFormB.find!
     assert_equal [], formb.allergies
     formb.allergies = %w[Peanut Corn]
-    assert_equal %w[Peanut Corn], formb.allergies
-    formb.allergies = ['Corn']
-    assert_equal ['Corn'], formb.allergies
+    assert_equal %w[peanut corn], formb.allergies
+    formb.allergies = ['corn']
+    assert_equal ['corn'], formb.allergies
   end
 
   def test_form_field_with_id_locator_and_callback

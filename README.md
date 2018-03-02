@@ -103,10 +103,12 @@ module Dom
     field :biography, 'person[bio]'
 
     # locate select field by label, acts as select
-    field :favorite_color, 'Favorite Color', as: :select
+    # use option text for value mapping
+    field :favorite_color, 'Favorite Color', as: :select, source: :text
 
-    # support multiple selects for setting and reading value as an array
-    field :allergies, as: :select, multiple: true
+    # automatically handles select[multiple]
+    # use option[value] as default value mapping
+    field :allergies, as: :select
 
     # locate by id, convert value via callback
     field :age, 'person_age', &:to_i

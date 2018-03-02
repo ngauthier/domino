@@ -6,6 +6,11 @@ class Domino::Form::Field
     @locator = locator
     @options = options
     @callback = callback
+    extract_field_options
+  end
+
+  def extract_field_options
+    # nothing here, but can be overridden to extract options for the field
   end
 
   def value(node)

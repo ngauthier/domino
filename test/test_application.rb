@@ -93,9 +93,10 @@ class TestApplication
             <div class="input fav_color">
               <label for="person_fav_color">Favorite Color</label>
               <select id="person_fav_color" name="person[fav_color]">
-                <option val="red" #{'selected="selected"' if person['fav_color'] == 'red'}>Red</option>
-                <option val="blue" #{'selected="selected"' if person['fav_color'] == 'blue'}>Blue</option>
-                <option val="green" #{'selected="selected"' if person['fav_color'] == 'green'}>Green</option>
+                <option value>- Select a Color -</option>
+                <option value="red" #{'selected="selected"' if person['fav_color'] == 'red'}>Red</option>
+                <option value="blue" #{'selected="selected"' if person['fav_color'] == 'blue'}>Blue</option>
+                <option value="green" #{'selected="selected"' if person['fav_color'] == 'green'}>Green</option>
               </select>
             </div>
 
@@ -120,9 +121,10 @@ class TestApplication
             <div class="input allergies">
               <label for="allergies">Allergies</label>
               <select id="allergies" name="allergies" multiple="multiple">
-                <option val="peanut" #{'selected="selected"' if Array(params['allergies']).include?('peanut')}>Peanut</option>
-                <option val="corn" #{'selected="selected"' if Array(person['allergies']).include?('corn')}>Corn</option>
-                <option val="wheat" #{'selected="selected"' if Array(person['allergies']).include?('wheat')}>Wheat</option>
+                <option value>None</option>
+                <option value="peanut" #{'selected="selected"' if Array(params['allergies']).include?('peanut')}>Peanut</option>
+                <option value="corn" #{'selected="selected"' if Array(person['allergies']).include?('corn')}>Corn</option>
+                <option value="wheat" #{'selected="selected"' if Array(person['allergies']).include?('wheat')}>Wheat</option>
               </select>
             </div>
 
