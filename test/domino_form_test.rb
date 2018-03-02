@@ -22,7 +22,7 @@ class DominoFormTest < Minitest::Test
       field :name, 'First Name'
       field :last_name
       field :biography, 'person[bio]'
-      field :favorite_color, 'Favorite Color', as: :select, source: :text
+      field :favorite_color, 'Favorite Color', as: :select, &:text
       field :age, 'person_age', &:to_i
       field :vehicles, '.input.vehicles', as: CheckBoxesField
       field :is_human, 'is_human', as: :boolean

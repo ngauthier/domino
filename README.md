@@ -103,11 +103,11 @@ module Dom
     field :biography, 'person[bio]'
 
     # locate select field by label, acts as select
-    # use option text for value mapping
-    field :favorite_color, 'Favorite Color', as: :select, source: :text
+    # callback mapper operates on selected option nodes
+    field :favorite_color, 'Favorite Color', as: :select, &:text
 
     # automatically handles select[multiple]
-    # use option[value] as default value mapping
+    # callback mapper operates on selected option nodes: &:value by default
     field :allergies, as: :select
 
     # locate by id, convert value via callback
