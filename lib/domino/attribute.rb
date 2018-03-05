@@ -34,6 +34,14 @@ class Domino::Attribute
     value === value(node)
   end
 
+  def element(node)
+    if combinator?
+      node
+    else
+      node.find(selector)
+    end
+  end
+
   private
 
   def combinator?

@@ -39,8 +39,12 @@ class Domino::Form < Domino
 
     field_definitions[attribute] = field_class.new(attribute, locator, options, &callback)
 
-    define_method :"#{attribute}" do
-      self.class.field_definitions[attribute].value(node)
+    define_method :"#{attribute}" do |&block|
+      if block.is_a?(Proc)
+        block.call(self.class.field_definitions[attribute].field(node))
+      else
+        self.class.field_definitions[attribute].value(node)
+      end
     end
 
     define_method :"#{attribute}=" do |value|

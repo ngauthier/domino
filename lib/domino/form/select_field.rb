@@ -2,7 +2,7 @@ class Domino::Form::SelectField < Domino::Form::Field
   # Returns the set of selected options that can be processed in the callback.
   def read(node)
     s = field(node)
-    selected = s.all("option[selected]")
+    selected = s.all('option[selected]')
     s.multiple? ? selected : selected.first
   end
 

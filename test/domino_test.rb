@@ -188,4 +188,21 @@ class DominoTest < Minitest::Test
       Dom::NoSelector.where(foo: 'bar')
     end
   end
+
+  def test_named_field_method_yields_node
+    person = Dom::Person.find_by!(uuid: 'e94bb2d3-71d2-4efb-abd4-ebc0cb58d19f')
+    name_node = page.find(".person[data-uuid='e94bb2d3-71d2-4efb-abd4-ebc0cb58d19f'] .name")
+    assert_equal(name_node, person.name { |node| node })
+  end
+
+  def test_named_field_method_yields_node_when_combinator
+    person = Dom::Person.find_by!(uuid: 'e94bb2d3-71d2-4efb-abd4-ebc0cb58d19f')
+    uuid_node = page.find(".person[data-uuid='e94bb2d3-71d2-4efb-abd4-ebc0cb58d19f']")
+    assert_equal(uuid_node, person.uuid { |node| node })
+  end
+
+  def test_named_field_yield_usefulness
+    person = Dom::Person.find_by!(uuid: 'e94bb2d3-71d2-4efb-abd4-ebc0cb58d19f')
+    assert_equal 'h2', person.name(&:tag_name)
+  end
 end

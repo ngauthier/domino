@@ -187,14 +187,14 @@ class DominoFormTest < Minitest::Test
   end
 
   def test_static_create_with_no_matches
-    visit "/"
+    visit '/'
     assert_raises Capybara::ElementNotFound do
       Dom::PersonForm.create name: 'Marie', last_name: 'Curie'
     end
   end
 
   def test_static_update_with_no_matches
-    visit "/"
+    visit '/'
     assert_raises Capybara::ElementNotFound do
       Dom::PersonForm.update name: 'Marie', last_name: 'Curie'
     end
@@ -202,5 +202,17 @@ class DominoFormTest < Minitest::Test
 
   def test_supports_normal_attributes
     assert_equal({ action: '/people/23', submit_method: 'post' }, Dom::PersonForm.find!.attributes)
+  end
+
+  def test_named_field_method_yields_node
+    person = Dom::PersonForm.find!
+    name_field_node = page.find_field('First Name')
+    assert_equal(name_field_node, person.name { |node| node })
+    person.name { |node| node }
+  end
+
+  def test_named_field_yield_usefulness
+    person = Dom::PersonForm.find!
+    assert_equal ['- Select a Color -', 'Red', 'Blue', 'Green'], person.favorite_color { |n| n.all('option').map(&:text) }
   end
 end

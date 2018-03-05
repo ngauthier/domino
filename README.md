@@ -168,6 +168,27 @@ end
 Provide your custom class using the `:as` option when defining your field,
 as shown in the example above.
 
+### Accessing the Attribute/Field Node
+
+The named accessor method for any field or attribute will yield the Capybara
+node of the attribute if you pass a block. You can use this to check
+certain properties of the node without having to break out of your Dominos.
+
+**Example:** Checking available options in a select field
+
+```ruby
+person = Dom::PersonForm.find!
+expected_options = ["- Select a Color -", "Red", "Blue", "Green"]
+assert_equal expected_options, person.favorite_color { |n| n.all('option').map(&:text) }
+```
+
+**Example:** Checking the tag of the node containing the attribute value
+
+```ruby
+person = Dom::Person.find_by!(uuid: "e94bb2d3-71d2-4efb-abd4-ebc0cb58d19f")
+assert_equal "h2", person.name { |n| n.tag_name }
+```
+
 ## Integration with capybara
 
 Domino uses capybara internally to search html for nodes and

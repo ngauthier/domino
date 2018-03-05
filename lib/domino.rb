@@ -138,8 +138,12 @@ class Domino
 
       attribute_definitions[attribute] = Attribute.new(attribute, selector, &callback)
 
-      define_method :"#{attribute}" do
-        self.class.attribute_definitions[attribute].value(node)
+      define_method :"#{attribute}" do |&block|
+        if block.is_a?(Proc)
+          block.call(self.class.attribute_definitions[attribute].element(node))
+        else
+          self.class.attribute_definitions[attribute].value(node)
+        end
       end
 
       define_singleton_method :"find_by_#{attribute}" do |value|
