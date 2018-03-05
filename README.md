@@ -74,6 +74,100 @@ Dom::Post.find_by_title('First Post').delete
 assert_nil Dom::Post.find_by_title('First Post')
 ```
 
+## Domino::Form
+
+Domino makes it easy to model your forms for testing with `Domino::Form`.
+To create a basic form, simply inherit from `Domino::Form` and define a
+selector, a key (optional), and a set of fields.
+
+```ruby
+module Dom
+  class PersonForm < Domino::Form
+    selector 'form.person'
+
+    # For forms with names like `person[age]`, no need to define the
+    # locator on each field. Define a key to automatically generate
+    # locators based on the field name.
+    key 'person'
+
+    # Define a custom selector to click to submit the form
+    submit_with "input[type='submit']" # this is the default
+
+    # locate field by label
+    field :first_name, 'First Name'
+
+    # locate field by automatically generated name (uses key, person[last_name])
+    field :last_name
+
+    # locate field by fully qualified name
+    field :biography, 'person[bio]'
+
+    # locate select field by label, acts as select
+    # callback mapper operates on selected option nodes
+    field :favorite_color, 'Favorite Color', as: :select, &:text
+
+    # automatically handles select[multiple]
+    # callback mapper operates on selected option nodes: &:value by default
+    field :allergies, as: :select
+
+    # locate by id, convert value via callback
+    field :age, 'person_age', &:to_i
+
+    # use a custom field type for unusual or composite fields
+    field :vehicles, '.input.vehicles', as: CheckBoxesField
+
+    # locate a field with a name that doesn't use the key
+    field :is_human, 'is_human', as: :boolean
+
+    # still supports attributes for non-input nodes
+    attribute :action, "&[action]"
+    attribute :submit_method, "&[method]"
+  end
+end
+```
+
+In the above example, you can define a field to get a reader and writer
+method for the field. A form will also provide a mass-assignment writer
+and a save method to submit the form.
+
+```ruby
+person = Dom::PersonForm.find!
+person.age            #=> 25
+person.vehicles       #=> ["Car", "Bike"]
+person.is_human       #=> true
+person.favorite_color #=> Blue
+
+person.age = 35
+person.age #=> 35
+
+person.set(vehicles: ["Car", "Van"], first_name: "Jessica", last_name: "Jones")
+person.attributes #=> { first_name: "Jessica", last_name: "Jones", biography: "", favorite_color: "Blue", age: 35, vehicles: ["Car", "Van"], is_human: true }
+```
+
+`Domino::Form` provides basic field types for text inputs and textareas,
+single-selects, and boolean fields. You can create custom field types
+for more complex form inputs by subclassing `Domino::Form::Field` and
+overriding the `read` and `write` methods. For example, if you have a
+collection of check boxes, this might suit your needs:
+
+```ruby
+class CheckBoxesField < Domino::Form::Field
+  def read(node)
+    node.find(locator).all('input[type=checkbox]').select(&:checked?).map(&:value)
+  end
+
+  def write(node, value)
+    value = Array(value)
+    node.find(locator).all('input[type=checkbox]').each do |box|
+      box.set(value.include?(box.value))
+    end
+  end
+end
+```
+
+Provide your custom class using the `:as` option when defining your field,
+as shown in the example above.
+
 ## Integration with capybara
 
 Domino uses capybara internally to search html for nodes and

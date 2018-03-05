@@ -1,59 +1,6 @@
-require 'bundler/setup'
-unless ENV['CI']
-  require 'simplecov'
-  SimpleCov.start
-end
-Bundler.require
-require 'minitest/autorun'
-require 'minitest/mock'
-
-class TestApplication
-  def call(_env)
-    [200, { 'Content-Type' => 'text/plain' }, [%(
-        <html>
-          <body>
-            <h1>Here are people and animals</h1>
-            <div id='people'>
-              <div class='person active' data-rank="1" data-uuid="e94bb2d3-71d2-4efb-abd4-ebc0cb58d19f">
-                <h2 class='name'>Alice</h2>
-                <p class='last-name'>Cooper</p>
-                <p class='bio'>Alice is fun</p>
-                <p class='fav-color'>Blue</p>
-                <p class='age'>23</p>
-              </div>
-              <div class='person' data-rank="3" data-uuid="05bf319e-8d6a-43c2-be37-2dad8ddbe5af">
-                <h2 class='name'>Bob</h2>
-                <p class='last-name'>Marley</p>
-                <p class='bio'>Bob is smart</p>
-                <p class='fav-color'>Red</p>
-                <p class='age'>52</p>
-              </div>
-              <div class='person' data-rank="2" data-uuid="4abcdeff-1d36-44a9-a05e-8fc57564d2c4">
-                <h2 class='name'>Charlie</h2>
-                <p class='last-name'>Murphy</p>
-                <p class='bio'>Charlie is wild</p>
-                <p class='fav-color'>Red</p>
-              </div>
-              <div class='person' data-rank="7" data-blocked data-uuid="2afccde0-5d13-41c7-ab01-7f37fb2fe3ee">
-                <h2 class='name'>Donna</h2>
-                <p class='last-name'>Summer</p>
-                <p class='bio'>Donna is quiet</p>
-              </div>
-            </div>
-            <div id='animals'></div>
-            <div id='receipts'>
-              <div class='receipt' id='receipt-72' data-store='ACME'></div>
-            </div>
-          </body>
-        </html>
-    )]]
-  end
-end
-
-Capybara.app = TestApplication.new
-
-class DominoTest < MiniTest::Unit::TestCase
+class DominoTest < Minitest::Test
   include Capybara::DSL
+
   module Dom
     class Person < Domino
       selector '#people .person'

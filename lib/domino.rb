@@ -1,5 +1,4 @@
 require 'capybara/dsl'
-require 'set'
 # To create a basic Domino class, inherit from Domino and
 # define a selector and attributes:
 #
@@ -43,6 +42,9 @@ require 'set'
 class Domino
   include Capybara::DSL
   extend  Capybara::DSL
+
+  require 'domino/attribute'
+  require 'domino/form'
 
   # Namespaced Domino::Error
   class Error < StandardError; end
@@ -136,14 +138,13 @@ class Domino
 
       attribute_definitions[attribute] = Attribute.new(attribute, selector, &callback)
 
-      class_eval %{
-        def #{attribute}
-          self.class.attribute_definitions[:#{attribute}].value(node)
-        end
-        def self.find_by_#{attribute}(value)
-          find_by_attribute(:#{attribute}, value)
-        end
-      }
+      define_method :"#{attribute}" do
+        self.class.attribute_definitions[attribute].value(node)
+      end
+
+      define_singleton_method :"find_by_#{attribute}" do |value|
+        find_by_attribute(attribute, value)
+      end
     end
 
     private
@@ -193,56 +194,5 @@ class Domino
   # Store the capybara node internally
   def initialize(node)
     @node = node
-  end
-
-  class Attribute
-    attr_reader :name, :selector, :callback
-
-    def initialize(name, selector = nil, &callback)
-      @callback = callback
-      @name = name
-      @selector = selector || %(.#{name.to_s.tr('_', '-')})
-    end
-
-    def value(node)
-      val = value_before_typecast(node)
-
-      if val && callback.is_a?(Proc)
-        callback.call(val)
-      else
-        val
-      end
-    end
-
-    # Get the text of the first dom element matching a selector
-    #
-    #   Dom::Post.all.first.attribute('.title')
-    def value_before_typecast(node)
-      if combinator?
-        node[node_attribute_key] || node.matches_css?(combinator)
-      else
-        node.find(selector).text
-      end
-    rescue Capybara::ElementNotFound
-      nil
-    end
-
-    def match_value?(node, value)
-      value === value(node)
-    end
-
-    private
-
-    def combinator?
-      selector[0] == "&".freeze
-    end
-
-    def combinator
-      @combinator ||= selector.sub(/&/, "") if combinator?
-    end
-
-    def node_attribute_key
-      @node_attribute_key ||= combinator.match(/(?<=\[).+?(?=\])/) { |m| m[0] }
-    end
   end
 end
