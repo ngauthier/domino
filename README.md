@@ -48,6 +48,9 @@ Now in your integration test you can use some of Domino's methods:
 assert_equal 4, Dom::Post.count
 refute_nil Dom::Post.find_by_title('First Post')
 
+# Find by attribute yields the node when using a block.
+assert_equal Dom::Post.find_by_title { |node| node.text == "First Post" && node.tag_name == 'p' }
+
 # Multiple attributes, returns first match if any
 refute_nil Dom::Post.find_by(title: 'First Post', author: 'Jane Doe')
 
