@@ -9,11 +9,14 @@ class Domino::Attribute
 
   def value(node)
     val = value_before_typecast(node)
+    convert(val)
+  end
 
-    if val && callback.is_a?(Proc)
-      callback.call(val)
+  def convert(value)
+    if value && callback.is_a?(Proc)
+      callback.call(value)
     else
-      val
+      value
     end
   end
 
@@ -30,8 +33,14 @@ class Domino::Attribute
     nil
   end
 
-  def match_value?(node, value)
-    value === value(node)
+  def match_value?(node, value = nil, &predicate)
+    if predicate.is_a?(Proc)
+      predicate.call(element(node))
+    else
+      node_value = value(node)
+      test_value = convert(value) rescue value
+      test_value === node_value
+    end
   end
 
   def element(node)
