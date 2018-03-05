@@ -205,4 +205,19 @@ class DominoTest < Minitest::Test
     person = Dom::Person.find_by!(uuid: 'e94bb2d3-71d2-4efb-abd4-ebc0cb58d19f')
     assert_equal 'h2', person.name(&:tag_name)
   end
+
+  def test_find_by_with_unconverted_value_for_callback_computed_attribute
+    person = Dom::Person.find_by!(uuid: '05bf319e-8d6a-43c2-be37-2dad8ddbe5af')
+    assert_equal person.node, Dom::Person.find_by_age('52').node
+  end
+
+  def test_find_by_with_converted_value_for_callback_computed_attribute
+    person = Dom::Person.find_by!(uuid: '05bf319e-8d6a-43c2-be37-2dad8ddbe5af')
+    assert_equal person.node, Dom::Person.find_by_age(52).node
+  end
+
+  def test_find_by_with_converted_value_for_callback_computed_attribute_with_regex
+    person = Dom::Person.find_by!(uuid: '05bf319e-8d6a-43c2-be37-2dad8ddbe5af')
+    assert_equal person.node, Dom::Person.find_by_age { |age_node| age_node.text =~ /5[29]/ && age_node.tag_name == 'p' }.node
+  end
 end

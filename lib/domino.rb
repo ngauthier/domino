@@ -146,8 +146,8 @@ class Domino
         end
       end
 
-      define_singleton_method :"find_by_#{attribute}" do |value|
-        find_by_attribute(attribute, value)
+      define_singleton_method :"find_by_#{attribute}" do |value = nil, &predicate|
+        find_by_attribute(attribute, value, &predicate)
       end
     end
 
@@ -160,9 +160,9 @@ class Domino
     end
 
     # Internal method for finding nodes by a selector
-    def find_by_attribute(attribute, value)
+    def find_by_attribute(attribute, value = nil, &predicate)
       detect do |domino|
-        attribute_definitions[attribute].match_value?(domino.node, value)
+        attribute_definitions[attribute].match_value?(domino.node, value, &predicate)
       end
     end
 
