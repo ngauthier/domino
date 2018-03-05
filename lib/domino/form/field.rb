@@ -12,8 +12,7 @@ class Domino::Form::Field
   # Delete any options for your field type that shouldn't be passed to
   # the field locator.
   # Default: noop
-  def extract_field_options
-  end
+  def extract_field_options; end
 
   # Convert the value from `#read` via callback if provided.
   def value(node)

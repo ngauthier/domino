@@ -22,7 +22,7 @@ class TestApplication
       edit params
     when '/people/23'
       params = Rack::Utils.parse_nested_query(env.fetch('rack.input').read)
-      edit params.merge(flash: "Person updated successfully.")
+      edit params.merge(flash: 'Person updated successfully.')
     end
   end
 
